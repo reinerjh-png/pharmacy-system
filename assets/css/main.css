@@ -1,0 +1,263 @@
+/* ============================================
+   SISTEMA DE DISEÑO — Farmacia SaaS R.DEV
+   Paleta: Verde profesional + blancos limpios
+   Fuente: Inter (Google Fonts CDN)
+   Benchmark: Linear.app / Vercel Dashboard
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Colores primarios */
+  --verde-900: #064e3b;
+  --verde-800: #065f46;
+  --verde-700: #047857;
+  --verde-600: #059669;
+  --verde-500: #10b981;
+  --verde-400: #34d399;
+  --verde-300: #6ee7b7;
+  --verde-100: #d1fae5;
+  --verde-50:  #ecfdf5;
+
+  /* Superficies */
+  --bg-app:        #f1f5f9;
+  --bg-sidebar:    #0f172a;
+  --bg-card:       #ffffff;
+  --bg-input:      #f8fafc;
+  --bg-hover:      #f1f5f9;
+
+  /* Texto */
+  --texto-primario:    #0f172a;
+  --texto-secundario:  #475569;
+  --texto-terciario:   #94a3b8;
+  --texto-sidebar:     #cbd5e1;
+  --texto-sidebar-act: #ffffff;
+  --texto-inverso:     #ffffff;
+
+  /* Bordes */
+  --borde:         #e2e8f0;
+  --borde-focus:   #10b981;
+  --borde-input:   #cbd5e1;
+
+  /* Semáforo de vencimientos */
+  --semaforo-rojo-bg:     #fef2f2;
+  --semaforo-rojo-texto:  #dc2626;
+  --semaforo-rojo-borde:  #fca5a5;
+  --semaforo-amarillo-bg:    #fffbeb;
+  --semaforo-amarillo-texto: #d97706;
+  --semaforo-amarillo-borde: #fcd34d;
+  --semaforo-verde-bg:    #f0fdf4;
+  --semaforo-verde-texto: #16a34a;
+  --semaforo-verde-borde: #86efac;
+
+  /* Estados */
+  --color-exito:        #10b981;
+  --color-exito-bg:     #ecfdf5;
+  --color-advertencia:  #f59e0b;
+  --color-advertencia-bg: #fffbeb;
+  --color-peligro:      #ef4444;
+  --color-peligro-bg:   #fef2f2;
+  --color-info:         #3b82f6;
+  --color-info-bg:      #eff6ff;
+
+  /* KPI Cards — colores semánticos */
+  --kpi-ventas-bg:      #ecfdf5;
+  --kpi-ventas-icon:    #059669;
+  --kpi-tx-bg:          #eff6ff;
+  --kpi-tx-icon:        #3b82f6;
+  --kpi-stock-bg:       #fef2f2;
+  --kpi-stock-icon:     #ef4444;
+  --kpi-vence-bg:       #fffbeb;
+  --kpi-vence-icon:     #d97706;
+
+  /* Tipografía */
+  --fuente:       'Inter', system-ui, -apple-system, sans-serif;
+  --text-xs:      0.75rem;
+  --text-sm:      0.875rem;
+  --text-base:    1rem;
+  --text-lg:      1.125rem;
+  --text-xl:      1.25rem;
+  --text-2xl:     1.5rem;
+  --text-3xl:     1.875rem;
+
+  /* Espaciado */
+  --espacio-1:  0.25rem;
+  --espacio-2:  0.5rem;
+  --espacio-3:  0.75rem;
+  --espacio-4:  1rem;
+  --espacio-5:  1.25rem;
+  --espacio-6:  1.5rem;
+  --espacio-8:  2rem;
+  --espacio-10: 2.5rem;
+  --espacio-12: 3rem;
+
+  /* Bordes redondeados */
+  --radio-sm:   6px;
+  --radio:      10px;
+  --radio-lg:   14px;
+  --radio-xl:   20px;
+  --radio-full: 9999px;
+
+  /* Sombras */
+  --sombra-xs:  0 1px 2px rgba(0,0,0,0.05);
+  --sombra-sm:  0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --sombra:     0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.04);
+  --sombra-md:  0 10px 15px rgba(0,0,0,0.07), 0 4px 6px rgba(0,0,0,0.04);
+  --sombra-lg:  0 20px 25px rgba(0,0,0,0.08), 0 10px 10px rgba(0,0,0,0.03);
+
+  /* Transiciones */
+  --transicion:       all 0.15s ease;
+  --transicion-lenta: all 0.25s ease;
+
+  /* Layout */
+  --sidebar-ancho:       240px;
+  --sidebar-ancho-col:   64px;
+  --topbar-alto:         60px;
+  --contenido-padding:   24px;
+
+  /* Z-Index Scale */
+  --z-base:     1;
+  --z-dropdown: 10;
+  --z-sticky:   20;
+  --z-sidebar:  30;
+  --z-overlay:  40;
+  --z-modal:    50;
+
+  /* --- Legacy compat (used by existing PHP views) --- */
+  --color-primario: #047857;
+  --color-primario-claro: #ecfdf5;
+  --color-primario-hover: #065f46;
+  --color-acento: #10b981;
+  --color-fondo: #f1f5f9;
+  --color-superficie: #ffffff;
+  --color-borde: #e2e8f0;
+  --color-texto: #0f172a;
+  --color-texto-secundario: #475569;
+  --radio: 10px;
+  --sombra: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --sombra-md: 0 10px 15px rgba(0,0,0,0.07), 0 4px 6px rgba(0,0,0,0.04);
+}
+
+/* ============================================
+   RESET
+   ============================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--fuente);
+  background-color: var(--bg-app);
+  color: var(--texto-primario);
+  line-height: 1.6;
+  font-size: var(--text-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================
+   TIPOGRAFÍA
+   ============================================ */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--texto-primario);
+  letter-spacing: -0.01em;
+}
+
+h1 { font-size: var(--text-2xl); font-weight: 700; }
+h2 { font-size: var(--text-xl); }
+h3 { font-size: var(--text-lg); }
+
+p {
+  max-width: 65ch;
+  line-height: 1.7;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+/* ============================================
+   UTILIDADES TIPOGRÁFICAS
+   ============================================ */
+.text-xs { font-size: var(--text-xs); }
+.text-sm { font-size: var(--text-sm); }
+.text-base { font-size: var(--text-base); }
+.text-lg { font-size: var(--text-lg); }
+.text-xl { font-size: var(--text-xl); }
+.text-2xl { font-size: var(--text-2xl); }
+.text-3xl { font-size: var(--text-3xl); }
+
+.font-light { font-weight: 300; }
+.font-normal { font-weight: 400; }
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+
+.text-primario { color: var(--texto-primario); }
+.text-secundario { color: var(--texto-secundario); }
+.text-terciario { color: var(--texto-terciario); }
+.text-peligro { color: var(--color-peligro); }
+.text-exito { color: var(--color-exito); }
+.text-advertencia { color: var(--color-advertencia); }
+.text-info { color: var(--color-info); }
+
+/* ============================================
+   UTILIDADES DE LAYOUT
+   ============================================ */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: var(--espacio-2); }
+.gap-4 { gap: var(--espacio-4); }
+.gap-6 { gap: var(--espacio-6); }
+
+.m-0 { margin: 0; }
+.mb-4 { margin-bottom: var(--espacio-4); }
+.mb-6 { margin-bottom: var(--espacio-6); }
+.mb-8 { margin-bottom: var(--espacio-8); }
+.mt-4 { margin-top: var(--espacio-4); }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

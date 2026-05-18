@@ -1,0 +1,320 @@
+/* ============================================
+   RESPONSIVE — Farmacia SaaS R.DEV
+   Mobile-first breakpoints
+   ============================================ */
+
+/* ============================================
+   BASE: Móvil (< 768px)
+   ============================================ */
+
+/* Sidebar oculto en móvil por defecto */
+.sidebar {
+  display: none;
+}
+
+/* Sidebar abierto en móvil */
+.sidebar.sidebar-open {
+  display: flex !important;
+  width: 280px;
+  max-width: 85vw;
+  box-shadow: 4px 0 24px rgba(0,0,0,0.4);
+  transform: translateX(0);
+  animation: slideInLeft 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+/* Backdrop para cuando el sidebar está abierto */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(2px);
+  z-index: calc(var(--z-sidebar) - 1);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-backdrop.show {
+  display: block;
+  opacity: 1;
+}
+
+/* Mobile topbar nueva (dentro de main-content) */
+.mobile-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--borde);
+  margin: -16px -16px 24px -16px; /* Para compensar el padding de main-content */
+  position: sticky;
+  top: 0;
+  z-index: calc(var(--z-sticky) - 1);
+}
+
+.mobile-brand {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--texto-primario);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-brand svg {
+  color: var(--verde-600);
+  width: 24px;
+  height: 24px;
+}
+
+/* Bottom nav visible en móvil */
+.bottom-nav {
+  display: flex;
+}
+
+/* Main content full width */
+.main-content {
+  margin-left: 0;
+  padding-bottom: 80px;
+}
+
+/* Topbar: mostrar brand + user en móvil */
+.topbar-page-title {
+  display: none;
+}
+
+.topbar-right .topbar-clock,
+.topbar-right .topbar-divider,
+.topbar-right .topbar-farmacia {
+  display: none;
+}
+
+.topbar-brand svg {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+
+/* KPI grid: 1 columna en móvil */
+.kpi-grid {
+  grid-template-columns: 1fr;
+}
+
+/* Semáforo: stack en móvil */
+.semaforo-grid {
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.semaforo-item {
+  flex-direction: row;
+  gap: 12px;
+  padding: 12px;
+}
+
+.semaforo-dot {
+  margin-bottom: 0;
+}
+
+/* Tablas: scroll horizontal */
+.tabla-contenedor {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Forms: single column */
+.grid-2-cols,
+.grid-3-cols,
+.grid-4-cols {
+  grid-template-columns: 1fr;
+}
+
+/* Page header: stack en móvil */
+.page-header {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.page-header-actions {
+  width: 100%;
+}
+
+.page-header-actions .btn {
+  flex: 1;
+}
+
+/* ============================================
+   TABLET (≥ 768px)
+   ============================================ */
+@media (min-width: 768px) {
+  .app-container {
+    flex-direction: row;
+  }
+
+  .sidebar {
+    display: flex;
+    width: var(--sidebar-ancho);
+    position: fixed;
+  }
+
+  .bottom-nav {
+    display: none;
+  }
+
+  .main-content {
+    margin-left: var(--sidebar-ancho);
+    padding: 0;
+    padding-bottom: 24px;
+  }
+
+  /* Topbar: mostrar título de página */
+  .topbar-page-title {
+    display: block;
+  }
+
+  .topbar-brand {
+    display: none;
+  }
+
+  .topbar-right .topbar-clock {
+    display: block;
+  }
+
+  /* Topbar original mostrar en desktop */
+  .topbar-right .topbar-clock {
+    display: block;
+  }
+
+  .topbar-right .topbar-divider {
+    display: block;
+  }
+
+  /* Ocultar mobile topbar en tablet/desktop */
+  .mobile-topbar {
+    display: none !important;
+  }
+
+  /* KPI grid: 2 columnas */
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Semáforo: horizontal */
+  .semaforo-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .semaforo-item {
+    flex-direction: column;
+    gap: 0;
+    padding: 16px;
+  }
+
+  .semaforo-dot {
+    margin-bottom: 8px;
+  }
+
+  /* Form grids */
+  .grid-2-cols {
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  /* Page header horizontal */
+  .page-header {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .page-header-actions {
+    width: auto;
+  }
+
+  .page-header-actions .btn {
+    flex: none;
+  }
+}
+
+/* ============================================
+   DESKTOP (≥ 1024px)
+   ============================================ */
+@media (min-width: 1024px) {
+  .main-content {
+    padding: 0;
+    padding-bottom: 32px;
+  }
+
+  .main-content > .container {
+    padding: 0 var(--espacio-8);
+  }
+
+  /* KPI grid: 4 columnas */
+  .kpi-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  /* Form grids */
+  .grid-3-cols {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .grid-4-cols {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+
+  /* Topbar: mostrar farmacia */
+  .topbar-right .topbar-farmacia {
+    display: block;
+  }
+}
+
+/* ============================================
+   WIDE DESKTOP (≥ 1440px)
+   ============================================ */
+@media (min-width: 1440px) {
+  .container {
+    max-width: 1280px;
+  }
+
+  .main-content > .container {
+    padding: 0 var(--espacio-10);
+  }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+@media print {
+  .sidebar,
+  .bottom-nav,
+  .topbar,
+  .btn,
+  .page-header-actions {
+    display: none !important;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+
+  .card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+
+  body {
+    background: white;
+  }
+}
