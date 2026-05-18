@@ -49,7 +49,7 @@ $semaforo_verde = $stmtVerde->fetchColumn();
 
 $es_admin = ($rol_id === 1);
 
-// Gráfico: Ventas últimos 7 días
+// Gráfico: Ventas últimos 7 días — UNA sola query (elimina N+1 de 7 queries)
 $stmtGrafico = $pdo->query("
     SELECT DATE(fecha) as dia, SUM(total) as total 
     FROM ventas 
@@ -57,21 +57,17 @@ $stmtGrafico = $pdo->query("
     GROUP BY DATE(fecha) 
     ORDER BY dia ASC
 ");
-$ventas_semana = $stmtGrafico->fetchAll();
+$ventas_semana = $stmtGrafico->fetchAll(PDO::FETCH_KEY_PAIR); // ['Y-m-d' => total]
 
-// Rellenar días vacíos para el gráfico
-$dias_grafico = [];
+// Rellenar días vacíos con PHP — sin queries adicionales
+$fechas = [];
 $totales_grafico = [];
 for ($i = 6; $i >= 0; $i--) {
     $fecha_iter = date('Y-m-d', strtotime("-$i days"));
-    $dias_grafico[] = date('d/m', strtotime($fecha_iter));
-    
-    $fechas[] = date('d/m', strtotime("-$i days"));
-    
-    $stmtG = $pdo->prepare("SELECT COALESCE(SUM(total), 0) FROM ventas WHERE DATE(fecha) = ? AND estado = 'completada'");
-    $stmtG->execute([$fecha_iter]);
-    $totales_grafico[] = $stmtG->fetchColumn();
+    $fechas[]         = date('d/m', strtotime($fecha_iter));
+    $totales_grafico[] = isset($ventas_semana[$fecha_iter]) ? (float)$ventas_semana[$fecha_iter] : 0;
 }
+
 
 $pagina_titulo = 'Dashboard';
 include __DIR__ . '/views/layout/header.php';

@@ -32,6 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($usuario && password_verify($password, $usuario['password_hash'])) {
                 if ($usuario['activo'] == 1) {
+                    // Regenerar ID de sesión para prevenir Session Fixation
+                    session_regenerate_id(true);
                     $_SESSION['usuario_id'] = $usuario['id'];
                     $_SESSION['usuario_nombre'] = $usuario['nombre'];
                     $_SESSION['rol_id'] = $usuario['rol_id'];

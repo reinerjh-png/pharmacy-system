@@ -5,6 +5,12 @@ require_once __DIR__ . '/../../config/farmacia.php';
 
 $rol_id = (int)($_SESSION['rol_id'] ?? 0);
 $base_url = '/sys-farmacia';
+
+// ── Cabeceras de Seguridad HTTP ──
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: SAMEORIGIN');
+header('X-XSS-Protection: 1; mode=block');
+header('Referrer-Policy: strict-origin-when-cross-origin');
 ?>
 <!DOCTYPE html>
 <html lang="es">

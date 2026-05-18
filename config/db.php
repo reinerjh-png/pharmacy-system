@@ -2,10 +2,23 @@
 // config/db.php
 // Conexión PDO a MySQL — Sistema de Farmacia SaaS
 
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'sys-farmacia');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+// ====================================================
+// PRODUCCIÓN: Desactivar la exposición de errores PHP
+// ====================================================
+ini_set('display_errors', '0');
+ini_set('display_startup_errors', '0');
+error_reporting(E_ALL);
+ini_set('log_errors', '1');
+// ini_set('error_log', __DIR__ . '/../logs/php_errors.log');
+
+// ====================================================
+// CREDENCIALES: usar variables de entorno si están definidas
+// (En InfinityFree: definir en .htaccess o php.ini local)
+// ====================================================
+define('DB_HOST',    getenv('DB_HOST')    ?: 'localhost');
+define('DB_NAME',    getenv('DB_NAME')    ?: 'sys-farmacia');
+define('DB_USER',    getenv('DB_USER')    ?: 'root');
+define('DB_PASS',    getenv('DB_PASS')    ?: '');
 define('DB_CHARSET', 'utf8mb4');
 
 /**

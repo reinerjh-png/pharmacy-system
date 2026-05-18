@@ -12,4 +12,5 @@ return [
     'usuarios'     => [1],           // solo admin
     'ajustes'      => [1, 3],        // admin y almacenero
     'dashboard'    => [1],           // solo admin
+    'recetas'      => [1, 2],        // admin y cajero
 ];

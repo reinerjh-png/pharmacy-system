@@ -1,0 +1,50 @@
+# ============================================================
+# .htaccess — Farmacia SaaS
+# Seguridad, rendimiento y caché para producción
+# ============================================================
+
+# ── Denegar acceso a archivos sensibles ──
+<FilesMatch "\.(md|sql|log|env|json|lock|bak|ini)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# ── Proteger directorios de configuración ──
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Bloquear acceso directo a config/ y auth/
+    RewriteRule ^config/ - [F,L]
+    RewriteRule ^\.git/ - [F,L]
+    RewriteRule ^Database/ - [F,L]
+    RewriteRule ^\.agents/ - [F,L]
+</IfModule>
+
+# ── Deshabilitar directory listing ──
+Options -Indexes
+
+# ── Seguridad de cookies de sesión ──
+<IfModule mod_headers.c>
+    Header always edit Set-Cookie ^(.*)$ $1;HttpOnly;SameSite=Strict
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+</IfModule>
+
+# ── Caché de assets estáticos (CSS, JS, imágenes) ──
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css             "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/png            "access plus 3 months"
+    ExpiresByType image/webp           "access plus 3 months"
+    ExpiresByType image/svg+xml        "access plus 3 months"
+    ExpiresByType image/x-icon         "access plus 1 year"
+    ExpiresByType font/woff2           "access plus 1 year"
+</IfModule>
+
+# ── Compresión GZIP ──
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css application/javascript text/plain application/json
+</IfModule>
+
+# ── Eliminar firma de versión del servidor ──
+ServerSignature Off

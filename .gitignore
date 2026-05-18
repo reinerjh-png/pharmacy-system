@@ -1,0 +1,30 @@
+# ============================================================
+# .gitignore — Farmacia SaaS
+# ============================================================
+
+# Credenciales y configs sensibles
+credenciales.md
+.env
+*.env
+config/db_local.php
+
+# Logs
+logs/
+*.log
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Dependencias de Node (si aplica)
+node_modules/
+
+# Archivos de agentes IA
+.agents/
