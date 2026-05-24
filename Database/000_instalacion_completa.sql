@@ -283,3 +283,38 @@ ALTER TABLE `usuarios` ADD INDEX `idx_usuarios_email` (`email`);
 
 -- ── OPTIMIZACIÓN FINAL ──
 OPTIMIZE TABLE `productos`, `inventario`, `ventas`, `detalle_ventas`, `usuarios`;
+
+-- =====================================================
+-- MÓDULO DE BRANDING E IDENTIDAD
+-- =====================================================
+
+-- Tabla principal de configuración de branding
+-- Diseñada para SaaS multitenancy futuro (campo "activo")
+CREATE TABLE IF NOT EXISTS branding (
+  id                       INT PRIMARY KEY AUTO_INCREMENT,
+  farmacia_nombre          VARCHAR(150) NOT NULL DEFAULT 'Mi Farmacia',
+  farmacia_slogan          VARCHAR(255)          DEFAULT 'Sistema de Gestión Profesional',
+  farmacia_color_primario  VARCHAR(7)   NOT NULL DEFAULT '#059669',
+  farmacia_color_secundario VARCHAR(7)  NOT NULL DEFAULT '#10b981',
+  farmacia_logo_url        VARCHAR(500)          DEFAULT NULL,
+  farmacia_direccion       VARCHAR(300)          DEFAULT NULL,
+  farmacia_telefono        VARCHAR(30)           DEFAULT NULL,
+  farmacia_ruc             VARCHAR(20)           DEFAULT NULL,
+  activo                   TINYINT(1)            DEFAULT 1,
+  actualizado_en           DATETIME              DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  actualizado_por          INT                   DEFAULT NULL,
+  FOREIGN KEY (actualizado_por) REFERENCES usuarios(id) ON DELETE SET NULL
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Configuración inicial con los valores actuales del sistema
+INSERT INTO branding (
+  farmacia_nombre,
+  farmacia_slogan,
+  farmacia_color_primario,
+  farmacia_color_secundario
+) VALUES (
+  'Farmacia San Miguel',
+  'Sistema de Gestión',
+  '#059669',
+  '#10b981'
+);

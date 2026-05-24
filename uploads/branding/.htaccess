@@ -1,0 +1,13 @@
+# Deny direct file listing
+Options -Indexes
+
+# Allow images only
+<FilesMatch "\.(jpg|jpeg|png|svg|gif|webp)$">
+    Allow from all
+</FilesMatch>
+
+# Block everything else
+<FilesMatch "^(?!.*\.(jpg|jpeg|png|svg|gif|webp)$)">
+    Order deny,allow
+    Deny from all
+</FilesMatch>

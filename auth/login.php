@@ -5,7 +5,17 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../config/farmacia.php';
+require_once __DIR__ . '/../config/branding.php';
+
+// En login no usamos farmacia.php para no duplicar includes
+$_br = branding();
+$_br_nombre   = htmlspecialchars($_br['farmacia_nombre']);
+$_br_slogan   = htmlspecialchars($_br['farmacia_slogan'] ?? 'Sistema de Gestión');
+$_br_logo     = $_br['farmacia_logo_url'] ? htmlspecialchars($_br['farmacia_logo_url']) : null;
+$_br_primario = htmlspecialchars($_br['farmacia_color_primario']);
+$_br_secundario = htmlspecialchars($_br['farmacia_color_secundario']);
+$_br_hover    = htmlspecialchars($_br['_color_hover']);
+$_br_claro    = htmlspecialchars($_br['_color_claro']);
 
 if (isset($_SESSION['usuario_id'])) {
     header("Location: ../index.php");
@@ -15,14 +25,14 @@ if (isset($_SESSION['usuario_id'])) {
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email'] ?? '');
+    $email    = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
     if (empty($email) || empty($password)) {
         $error = 'Por favor, ingrese su correo y contraseña.';
     } else {
         try {
-            $pdo = conectar();
+            $pdo  = conectar();
             $stmt = $pdo->prepare("SELECT u.id, u.nombre, u.password_hash, u.rol_id, u.activo, r.nombre as rol_nombre 
                                    FROM usuarios u 
                                    JOIN roles r ON u.rol_id = r.id 
@@ -32,12 +42,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($usuario && password_verify($password, $usuario['password_hash'])) {
                 if ($usuario['activo'] == 1) {
-                    // Regenerar ID de sesión para prevenir Session Fixation
                     session_regenerate_id(true);
-                    $_SESSION['usuario_id'] = $usuario['id'];
+                    $_SESSION['usuario_id']     = $usuario['id'];
                     $_SESSION['usuario_nombre'] = $usuario['nombre'];
-                    $_SESSION['rol_id'] = $usuario['rol_id'];
-                    $_SESSION['usuario_rol'] = $usuario['rol_nombre'];
+                    $_SESSION['nombre']         = $usuario['nombre'];
+                    $_SESSION['rol_id']         = $usuario['rol_id'];
+                    $_SESSION['usuario_rol']    = $usuario['rol_nombre'];
                     header("Location: ../index.php");
                     exit;
                 } else {
@@ -57,12 +67,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión — <?= htmlspecialchars(FARMACIA_NOMBRE) ?></title>
+    <title>Iniciar Sesión — <?= $_br_nombre ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/main.css?v=2.0">
-    <link rel="stylesheet" href="../assets/css/components.css?v=2.0">
+    <link rel="stylesheet" href="../assets/css/main.css?v=2.1">
+    <link rel="stylesheet" href="../assets/css/components.css?v=2.1">
+
+    <!-- CSS vars de branding inyectadas dinámicamente -->
+    <?= branding_css_vars() ?>
+
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -78,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .login-panel-left {
             display: none;
             flex: 1;
-            background: linear-gradient(150deg, #064e3b 0%, #0f172a 60%, #065f46 100%);
+            background: linear-gradient(150deg, color-mix(in srgb, <?= $_br_primario ?> 80%, #000) 0%, #0f172a 60%, <?= $_br_primario ?> 100%);
             position: relative;
             overflow: hidden;
             padding: 60px 56px;
@@ -93,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             top: -120px; right: -120px;
             width: 420px; height: 420px;
             border-radius: 50%;
-            background: rgba(16, 185, 129, 0.12);
+            background: rgba(255,255,255, 0.06);
             pointer-events: none;
         }
         .login-panel-left::after {
@@ -102,7 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             bottom: -80px; left: -80px;
             width: 300px; height: 300px;
             border-radius: 50%;
-            background: rgba(16, 185, 129, 0.08);
+            background: rgba(255,255,255, 0.04);
             pointer-events: none;
         }
 
@@ -114,14 +128,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         .left-brand-icon {
             width: 48px; height: 48px;
-            background: rgba(16, 185, 129, 0.2);
-            border: 1px solid rgba(16, 185, 129, 0.35);
+            background: rgba(255,255,255, 0.15);
+            border: 1px solid rgba(255,255,255, 0.25);
             border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #34d399;
+            color: #ffffff;
+            overflow: hidden;
+            flex-shrink: 0;
         }
+        .left-brand-icon img { width: 100%; height: 100%; object-fit: contain; }
         .left-brand-icon svg { width: 24px; height: 24px; }
         .left-brand-name {
             font-size: 1.2rem;
@@ -131,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         .left-brand-sub {
             font-size: 0.75rem;
-            color: #6ee7b7;
+            color: rgba(255,255,255,0.7);
             font-weight: 500;
             letter-spacing: 0.05em;
             text-transform: uppercase;
@@ -146,10 +163,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             line-height: 1.15;
             margin-bottom: 20px;
         }
-        .left-headline span { color: #34d399; }
+        .left-headline span { color: <?= $_br_secundario ?>; }
         .left-desc {
             font-size: 1rem;
-            color: #94a3b8;
+            color: rgba(255,255,255,0.6);
             line-height: 1.6;
             max-width: 380px;
         }
@@ -159,16 +176,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             gap: 32px;
             z-index: 1;
         }
-        .stat-item { }
         .stat-value {
             font-size: 1.75rem;
             font-weight: 700;
-            color: #34d399;
+            color: <?= $_br_secundario ?>;
             letter-spacing: -0.03em;
         }
         .stat-label {
             font-size: 0.78rem;
-            color: #64748b;
+            color: rgba(255,255,255,0.45);
             text-transform: uppercase;
             letter-spacing: 0.05em;
             font-weight: 500;
@@ -189,7 +205,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             max-width: 420px;
         }
 
-        /* Mobile brand (visible solo en móvil) */
+        /* Mobile brand */
         .login-mobile-brand {
             display: flex;
             align-items: center;
@@ -198,12 +214,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         .login-mobile-icon {
             width: 44px; height: 44px;
-            background: #ecfdf5;
-            border: 1px solid #d1fae5;
+            background: <?= $_br_claro ?>;
+            border: 1px solid <?= $_br_primario ?>33;
             border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            color: #059669;
+            color: <?= $_br_primario ?>;
+            overflow: hidden;
+            flex-shrink: 0;
         }
+        .login-mobile-icon img { width: 100%; height: 100%; object-fit: contain; }
         .login-mobile-icon svg { width: 22px; height: 22px; }
         .login-mobile-name {
             font-size: 1.1rem;
@@ -241,16 +260,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-bottom: 8px;
         }
         .field-input-wrap { position: relative; }
-        .field-input-wrap svg:not(.toggle-pw svg) {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 18px; height: 18px;
-            color: #94a3b8;
-            pointer-events: none;
-        }
-        /* Selector específico para el ícono del campo (no el toggle) */
         .field-input-wrap > svg {
             position: absolute;
             left: 14px;
@@ -263,7 +272,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .field-input {
             width: 100%;
             height: 48px;
-            padding: 0 48px 0 44px; /* izq: icono de campo, der: espacio para toggle */
+            padding: 0 48px 0 44px;
             border: 1.5px solid #e2e8f0;
             border-radius: 10px;
             font-size: 0.95rem;
@@ -274,9 +283,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             outline: none;
         }
         .field-input:focus {
-            border-color: #059669;
+            border-color: <?= $_br_primario ?>;
             background: #ffffff;
-            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
+            box-shadow: 0 0 0 3px <?= $_br_primario ?>22;
         }
         .field-input::placeholder { color: #cbd5e1; }
 
@@ -297,7 +306,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             z-index: 2;
             transition: color 0.15s;
         }
-        .toggle-pw:hover { color: #059669; }
+        .toggle-pw:hover { color: <?= $_br_primario ?>; }
         .toggle-pw svg {
             width: 18px; height: 18px;
             display: block;
@@ -330,7 +339,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .btn-login {
             width: 100%;
             height: 50px;
-            background: #059669;
+            background: <?= $_br_primario ?>;
             color: #ffffff;
             font-size: 0.95rem;
             font-weight: 600;
@@ -344,13 +353,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             justify-content: center;
             gap: 8px;
             transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+            box-shadow: 0 4px 14px <?= $_br_primario ?>55;
             margin-top: 28px;
         }
         .btn-login:hover {
-            background: #047857;
+            background: <?= $_br_hover ?>;
             transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4);
+            box-shadow: 0 6px 20px <?= $_br_primario ?>66;
         }
         .btn-login:active { transform: translateY(0); }
         .btn-login svg { width: 18px; height: 18px; }
@@ -376,13 +385,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="login-panel-left">
         <div class="left-brand">
             <div class="left-brand-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                </svg>
+                <?php if ($_br_logo): ?>
+                    <img src="<?= $_br_logo ?>" alt="Logo <?= $_br_nombre ?>">
+                <?php else: ?>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                    </svg>
+                <?php endif; ?>
             </div>
             <div>
-                <div class="left-brand-name"><?= htmlspecialchars(FARMACIA_NOMBRE) ?></div>
-                <div class="left-brand-sub">Sistema de Gestión</div>
+                <div class="left-brand-name"><?= $_br_nombre ?></div>
+                <div class="left-brand-sub"><?= $_br_slogan ?></div>
             </div>
         </div>
 
@@ -414,13 +427,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <!-- Brand solo mobile -->
             <div class="login-mobile-brand">
                 <div class="login-mobile-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                    </svg>
+                    <?php if ($_br_logo): ?>
+                        <img src="<?= $_br_logo ?>" alt="Logo <?= $_br_nombre ?>">
+                    <?php else: ?>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                        </svg>
+                    <?php endif; ?>
                 </div>
                 <div>
-                    <div class="login-mobile-name"><?= htmlspecialchars(FARMACIA_NOMBRE) ?></div>
-                    <div class="login-mobile-sub">Sistema de Gestión</div>
+                    <div class="login-mobile-name"><?= $_br_nombre ?></div>
+                    <div class="login-mobile-sub"><?= $_br_slogan ?></div>
                 </div>
             </div>
 
@@ -428,7 +445,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p class="login-subheading">Ingresa tus credenciales para continuar</p>
 
             <?php if ($error): ?>
-                <div class="login-error">
+                <div class="login-error" role="alert">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                     </svg>
@@ -445,6 +462,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </svg>
                         <input type="email" name="email" id="email" class="field-input"
                                placeholder="correo@farmacia.com" required autofocus
+                               autocomplete="email"
                                value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
                     </div>
                 </div>
@@ -456,7 +474,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
                         </svg>
                         <input type="password" name="password" id="password" class="field-input"
-                               placeholder="••••••••" required>
+                               placeholder="••••••••" required autocomplete="current-password">
                         <button type="button" class="toggle-pw" id="toggle-pw" aria-label="Mostrar contraseña">
                             <svg id="icon-eye" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
@@ -469,7 +487,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
-                <button type="submit" class="btn-login">
+                <button type="submit" class="btn-login" id="btn-login">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
                     </svg>
@@ -477,7 +495,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </button>
             </form>
 
-            <p class="login-footer">© <?= date('Y') ?> <?= htmlspecialchars(FARMACIA_NOMBRE) ?> · Sistema de Gestión Farmacéutica</p>
+            <p class="login-footer">© <?= date('Y') ?> <?= $_br_nombre ?> · Desarrollado por <a href="https://www.linkedin.com/in/reiner-jairo-jim%C3%A9nez-huaman-9234a9388/" target="_blank" rel="noopener noreferrer" style="color: inherit; font-weight: 600;">Reiner Jimenez</a></p>
         </div>
     </div>
 

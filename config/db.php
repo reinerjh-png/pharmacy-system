@@ -16,7 +16,7 @@ ini_set('log_errors', '1');
 // (En InfinityFree: definir en .htaccess o php.ini local)
 // ====================================================
 define('DB_HOST',    getenv('DB_HOST')    ?: 'localhost');
-define('DB_NAME',    getenv('DB_NAME')    ?: 'sys-farmacia');
+define('DB_NAME',    getenv('DB_NAME')    ?: 'farmacia_saas');
 define('DB_USER',    getenv('DB_USER')    ?: 'root');
 define('DB_PASS',    getenv('DB_PASS')    ?: '');
 define('DB_CHARSET', 'utf8mb4');

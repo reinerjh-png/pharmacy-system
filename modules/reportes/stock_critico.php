@@ -2,9 +2,11 @@
 // modules/reportes/stock_critico.php
 require_once __DIR__ . '/../../auth/session_check.php';
 require_once __DIR__ . '/../../config/db.php';
+require_once __DIR__ . '/../../config/branding.php';
 
 verificar_permiso('reportes');
 $pdo = conectar();
+$_sc_brand = branding();
 
 // Obtener productos con stock crítico (agrupado por producto)
 $sql = "
@@ -31,7 +33,7 @@ if ($imprimir):
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <title>Reporte de Stock Crítico - Farmacia SaaS</title>
+    <title>Reporte de Stock Crítico - <?= htmlspecialchars($_sc_brand['farmacia_nombre']) ?></title>
     <style>
         body { 
             font-family: 'Inter', system-ui, sans-serif; 
@@ -83,8 +85,16 @@ if ($imprimir):
             <div class="meta">Generado el <?= date('d/m/Y a las H:i') ?></div>
         </div>
         <div style="text-align: right;">
-            <strong>Farmacia SaaS</strong><br>
-            <span class="meta">Control de Inventario</span>
+            <strong><?= htmlspecialchars($_sc_brand['farmacia_nombre']) ?></strong><br>
+            <?php if (!empty($_sc_brand['farmacia_ruc'])): ?>
+                <span class="meta">RUC: <?= htmlspecialchars($_sc_brand['farmacia_ruc']) ?></span><br>
+            <?php endif; ?>
+            <?php if (!empty($_sc_brand['farmacia_direccion'])): ?>
+                <span class="meta"><?= htmlspecialchars($_sc_brand['farmacia_direccion']) ?></span><br>
+            <?php endif; ?>
+            <?php if (!empty($_sc_brand['farmacia_telefono'])): ?>
+                <span class="meta">Tel: <?= htmlspecialchars($_sc_brand['farmacia_telefono']) ?></span>
+            <?php endif; ?>
         </div>
     </div>
     <table>
@@ -116,7 +126,7 @@ if ($imprimir):
     </table>
     
     <div class="footer">
-        Documento generado automáticamente por Farmacia SaaS - Módulo de Reportes
+        Documento generado automáticamente por <?= htmlspecialchars($_sc_brand['farmacia_nombre']) ?> &mdash; Módulo de Reportes
     </div>
 </body>
 </html>

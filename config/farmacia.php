@@ -1,8 +1,14 @@
 <?php
 // config/farmacia.php
-// Datos de la farmacia — el admin puede editar esto
+// Thin wrapper de compatibilidad.
+// Los valores ahora provienen de la base de datos via config/branding.php.
+// Las constantes se mantienen para no romper código existente.
 
-define('FARMACIA_NOMBRE',    'Farmacia San Miguel');   // Nombre visible en el sistema
-define('FARMACIA_SUBTITULO', 'Sistema de gestión profesional');
-define('FARMACIA_COLOR',     '#059669');               // Color primario personalizable
-define('FARMACIA_VERSION',   '1.0.0');
+require_once __DIR__ . '/branding.php';
+
+$_b = branding();
+
+if (!defined('FARMACIA_NOMBRE'))    define('FARMACIA_NOMBRE',    $_b['farmacia_nombre']);
+if (!defined('FARMACIA_SUBTITULO')) define('FARMACIA_SUBTITULO', $_b['farmacia_slogan'] ?? 'Sistema de Gestión');
+if (!defined('FARMACIA_COLOR'))     define('FARMACIA_COLOR',     $_b['farmacia_color_primario']);
+if (!defined('FARMACIA_VERSION'))   define('FARMACIA_VERSION',   '1.1.0');
