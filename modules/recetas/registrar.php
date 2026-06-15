@@ -26,14 +26,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $numero_receta = 'REC-' . date('YmdHis') . '-' . rand(100, 999);
 
-            $stmtR = $pdo->prepare("INSERT INTO recetas (numero_receta, nombre_paciente, nombre_medico, venta_id, usuario_id, observaciones) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmtR = $pdo->prepare("INSERT INTO recetas (numero_receta, nombre_paciente, nombre_medico, venta_id, usuario_id, observaciones, farmacia_id) VALUES (?, ?, ?, ?, ?, ?, ?)");
             $stmtR->execute([
                 $numero_receta,
                 $nombre_paciente,
                 $nombre_medico,
                 $venta_id,
                 $_SESSION['usuario_id'],
-                $observaciones
+                $observaciones,
+                farmacia_id()
             ]);
             $receta_id = $pdo->lastInsertId();
 

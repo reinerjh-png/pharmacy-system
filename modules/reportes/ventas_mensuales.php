@@ -14,9 +14,11 @@ $mes = (int)$partes[1];
 // Calcular último día del mes
 $ultimo_dia = date('t', strtotime($mes_anio . '-01'));
 
+$fid = farmacia_id();
+
 // Total del mes seleccionado
-$stmtT = $pdo->prepare("SELECT SUM(total) as total FROM ventas WHERE YEAR(fecha) = ? AND MONTH(fecha) = ? AND estado = 'completada'");
-$stmtT->execute([$anio, $mes]);
+$stmtT = $pdo->prepare("SELECT SUM(total) as total FROM ventas WHERE YEAR(fecha) = ? AND MONTH(fecha) = ? AND estado = 'completada' AND farmacia_id = ?");
+$stmtT->execute([$anio, $mes, $fid]);
 $total_mes_actual = (float)$stmtT->fetchColumn();
 
 // Total mes anterior
@@ -26,8 +28,8 @@ if ($mes_anterior == 0) {
     $mes_anterior = 12;
     $anio_anterior--;
 }
-$stmtTa = $pdo->prepare("SELECT SUM(total) as total FROM ventas WHERE YEAR(fecha) = ? AND MONTH(fecha) = ? AND estado = 'completada'");
-$stmtTa->execute([$anio_anterior, $mes_anterior]);
+$stmtTa = $pdo->prepare("SELECT SUM(total) as total FROM ventas WHERE YEAR(fecha) = ? AND MONTH(fecha) = ? AND estado = 'completada' AND farmacia_id = ?");
+$stmtTa->execute([$anio_anterior, $mes_anterior, $fid]);
 $total_mes_anterior = (float)$stmtTa->fetchColumn();
 
 // Variación
@@ -40,10 +42,10 @@ if ($total_mes_anterior > 0) {
 $stmtD = $pdo->prepare("
     SELECT DAY(fecha) as dia, SUM(total) as total
     FROM ventas
-    WHERE YEAR(fecha) = ? AND MONTH(fecha) = ? AND estado = 'completada'
+    WHERE YEAR(fecha) = ? AND MONTH(fecha) = ? AND estado = 'completada' AND farmacia_id = ?
     GROUP BY DAY(fecha)
 ");
-$stmtD->execute([$anio, $mes]);
+$stmtD->execute([$anio, $mes, $fid]);
 $datos_dias = $stmtD->fetchAll();
 
 $dias_grafico = [];

@@ -18,12 +18,14 @@ $sql = "
     LEFT JOIN categorias c ON p.categoria_id = c.id
     LEFT JOIN inventario i ON p.id = i.producto_id
     LEFT JOIN proveedores prov ON i.proveedor_id = prov.id
-    WHERE p.activo = 1
+    WHERE p.activo = 1 AND p.farmacia_id = ?
     GROUP BY p.id
     HAVING stock_total <= stock_minimo
     ORDER BY stock_total ASC, p.nombre ASC
 ";
-$productos = $pdo->query($sql)->fetchAll();
+$stmt = $pdo->prepare($sql);
+$stmt->execute([farmacia_id()]);
+$productos = $stmt->fetchAll();
 
 $imprimir = isset($_GET['print']);
 

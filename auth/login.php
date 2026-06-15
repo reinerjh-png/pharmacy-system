@@ -17,12 +17,24 @@ $_br_secundario = htmlspecialchars($_br['farmacia_color_secundario']);
 $_br_hover    = htmlspecialchars($_br['_color_hover']);
 $_br_claro    = htmlspecialchars($_br['_color_claro']);
 
+// Si ya hay sesión de farmacia activa, redirigir al dashboard
 if (isset($_SESSION['usuario_id'])) {
     header("Location: ../index.php");
     exit;
 }
 
+// Si ya hay sesión de super admin activa, redirigir a su panel
+if (!empty($_SESSION['super_admin_id'])) {
+    header('Location: ' . BASE_URL . '/superadmin/index.php');
+    exit;
+}
+
 $error = '';
+
+// Mensaje si la farmacia fue suspendida por el super admin
+if (isset($_GET['suspendida']) && $_GET['suspendida'] == '1') {
+    $error = 'El acceso a este sistema ha sido suspendido temporalmente. Contacte al administrador del servicio.';
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email    = trim($_POST['email'] ?? '');
@@ -32,29 +44,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Por favor, ingrese su correo y contraseña.';
     } else {
         try {
-            $pdo  = conectar();
-            $stmt = $pdo->prepare("SELECT u.id, u.nombre, u.password_hash, u.rol_id, u.activo, r.nombre as rol_nombre 
-                                   FROM usuarios u 
-                                   JOIN roles r ON u.rol_id = r.id 
-                                   WHERE u.email = ?");
-            $stmt->execute([$email]);
-            $usuario = $stmt->fetch();
+            $pdo = conectar();
 
-            if ($usuario && password_verify($password, $usuario['password_hash'])) {
-                if ($usuario['activo'] == 1) {
-                    session_regenerate_id(true);
-                    $_SESSION['usuario_id']     = $usuario['id'];
-                    $_SESSION['usuario_nombre'] = $usuario['nombre'];
-                    $_SESSION['nombre']         = $usuario['nombre'];
-                    $_SESSION['rol_id']         = $usuario['rol_id'];
-                    $_SESSION['usuario_rol']    = $usuario['rol_nombre'];
-                    header("Location: ../index.php");
-                    exit;
+            // ── PASO 1: ¿Es Super Admin? ──────────────────────────────────
+            $stmtSA = $pdo->prepare("SELECT id, nombre, password_hash, activo FROM super_admins WHERE email = ? LIMIT 1");
+            $stmtSA->execute([$email]);
+            $sa = $stmtSA->fetch();
+
+            if ($sa && password_verify($password, $sa['password_hash'])) {
+                if ($sa['activo'] == 0) {
+                    $error = 'Esta cuenta de super administrador está inactiva.';
                 } else {
-                    $error = 'Su cuenta está inactiva. Contacte al administrador.';
+                    session_regenerate_id(true);
+                    $_SESSION['super_admin_id']     = $sa['id'];
+                    $_SESSION['super_admin_nombre'] = $sa['nombre'];
+
+                    // Registrar último login
+                    $pdo->prepare("UPDATE super_admins SET ultimo_login = NOW() WHERE id = ?")->execute([$sa['id']]);
+
+                    header('Location: ' . BASE_URL . '/superadmin/index.php');
+                    exit;
                 }
             } else {
-                $error = 'Correo o contraseña incorrectos.';
+                // ── PASO 2: Usuario de farmacia ───────────────────────────
+                $stmt = $pdo->prepare("
+                    SELECT u.id, u.nombre, u.password_hash, u.rol_id, u.activo, u.farmacia_id,
+                           r.nombre as rol_nombre,
+                           f.activo as farmacia_activa
+                    FROM usuarios u
+                    JOIN roles r ON u.rol_id = r.id
+                    JOIN farmacias f ON u.farmacia_id = f.id
+                    WHERE u.email = ?
+                ");
+                $stmt->execute([$email]);
+                $usuario = $stmt->fetch();
+
+                if ($usuario && password_verify($password, $usuario['password_hash'])) {
+                    if ($usuario['activo'] == 0) {
+                        $error = 'Su cuenta está inactiva. Contacte al administrador.';
+                    } elseif ($usuario['farmacia_activa'] == 0) {
+                        $error = 'El acceso a su farmacia ha sido suspendido. Contacte al administrador del servicio.';
+                    } else {
+                        session_regenerate_id(true);
+                        $_SESSION['usuario_id']     = $usuario['id'];
+                        $_SESSION['usuario_nombre'] = $usuario['nombre'];
+                        $_SESSION['nombre']         = $usuario['nombre'];
+                        $_SESSION['rol_id']         = $usuario['rol_id'];
+                        $_SESSION['usuario_rol']    = $usuario['rol_nombre'];
+                        $_SESSION['farmacia_id']    = $usuario['farmacia_id'];
+                        header("Location: ../index.php");
+                        exit;
+                    }
+                } else {
+                    $error = 'Correo o contraseña incorrectos.';
+                }
             }
         } catch (PDOException $e) {
             $error = 'Error de sistema. Intente más tarde.';
@@ -62,6 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>

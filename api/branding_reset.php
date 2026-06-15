@@ -41,14 +41,15 @@ try {
                 farmacia_telefono         = NULL,
                 farmacia_ruc              = NULL,
                 actualizado_por           = :uid
-            WHERE activo = 1";
+            WHERE activo = 1 AND farmacia_id = :fid";
 
     $params = [
         ':nombre'  => $defaults['farmacia_nombre'],
         ':slogan'  => $defaults['farmacia_slogan'],
         ':color_p' => $defaults['farmacia_color_primario'],
         ':color_s' => $defaults['farmacia_color_secundario'],
-        ':uid'     => (int)$_SESSION['usuario_id']
+        ':uid'     => (int)$_SESSION['usuario_id'],
+        ':fid'     => (int)$_SESSION['farmacia_id']
     ];
 
     $stmt = $pdo->prepare($sql);

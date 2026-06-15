@@ -33,9 +33,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $pdo->beginTransaction();
             
-            // 1. Insertar Producto
-            $stmtP = $pdo->prepare("INSERT INTO productos (nombre, nombre_generico, codigo_barras, categoria_id, laboratorio_id, unidad_medida, requiere_receta) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmtP->execute([$nombre, $generico, $codigo ?: null, $categoria_id, $laboratorio_id, $unidad, $receta]);
+                        // 1. Insertar Producto con farmacia_id del tenant activo
+            $stmtP = $pdo->prepare("INSERT INTO productos (nombre, nombre_generico, codigo_barras, categoria_id, laboratorio_id, unidad_medida, requiere_receta, farmacia_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmtP->execute([$nombre, $generico, $codigo ?: null, $categoria_id, $laboratorio_id, $unidad, $receta, farmacia_id()]);
             $producto_id = $pdo->lastInsertId();
             
             // 2. Insertar Lote Inicial si se especificó cantidad > 0
@@ -58,9 +58,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$categorias = $pdo->query("SELECT * FROM categorias ORDER BY nombre")->fetchAll();
+$categorias  = $pdo->query("SELECT * FROM categorias ORDER BY nombre")->fetchAll();
 $laboratorios = $pdo->query("SELECT * FROM laboratorios ORDER BY nombre")->fetchAll();
-$proveedores = $pdo->query("SELECT * FROM proveedores WHERE activo=1 ORDER BY nombre")->fetchAll();
+// Proveedores solo de esta farmacia
+$stmt_prov = $pdo->prepare("SELECT * FROM proveedores WHERE activo=1 AND farmacia_id = ? ORDER BY nombre");
+$stmt_prov->execute([farmacia_id()]);
+$proveedores = $stmt_prov->fetchAll();
 
 $pagina_titulo = 'Agregar Producto';
 include __DIR__ . '/../../views/layout/header.php';

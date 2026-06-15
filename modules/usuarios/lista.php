@@ -14,23 +14,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['desactivar_id'])) {
     if ($id === (int)$_SESSION['usuario_id']) {
         $error = "No puede desactivar su propio usuario.";
     } else {
-        $pdo->prepare("UPDATE usuarios SET activo = 0 WHERE id = ?")->execute([$id]);
+        // Solo puede desactivar usuarios de su propia farmacia
+        $pdo->prepare("UPDATE usuarios SET activo = 0 WHERE id = ? AND farmacia_id = ?")->execute([$id, farmacia_id()]);
         $exito = "Usuario desactivado.";
     }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['activar_id'])) {
     $id = (int)$_POST['activar_id'];
-    $pdo->prepare("UPDATE usuarios SET activo = 1 WHERE id = ?")->execute([$id]);
+    $pdo->prepare("UPDATE usuarios SET activo = 1 WHERE id = ? AND farmacia_id = ?")->execute([$id, farmacia_id()]);
     $exito = "Usuario activado.";
 }
 
-$usuarios = $pdo->query("
+// Solo usuarios de la farmacia activa
+$usuarios = $pdo->prepare("
     SELECT u.*, r.nombre as rol 
     FROM usuarios u
     JOIN roles r ON u.rol_id = r.id
+    WHERE u.farmacia_id = ?
     ORDER BY u.nombre ASC
-")->fetchAll();
+");
+$usuarios->execute([farmacia_id()]);
+$usuarios = $usuarios->fetchAll();
 
 $pagina_titulo = 'Usuarios';
 include __DIR__ . '/../../views/layout/header.php';

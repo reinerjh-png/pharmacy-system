@@ -8,13 +8,15 @@ $pdo = conectar();
 
 $fecha = $_GET['fecha'] ?? date('Y-m-d');
 
+$fid = farmacia_id();
+
 // Resumen general del día
 $stmtR = $pdo->prepare("
     SELECT COUNT(id) as transacciones, SUM(total) as total_vendido
     FROM ventas 
-    WHERE DATE(fecha) = ? AND estado = 'completada'
+    WHERE DATE(fecha) = ? AND estado = 'completada' AND farmacia_id = ?
 ");
-$stmtR->execute([$fecha]);
+$stmtR->execute([$fecha, $fid]);
 $resumen = $stmtR->fetch();
 
 $transacciones = (int)$resumen['transacciones'];
@@ -25,11 +27,11 @@ $ticket_promedio = $transacciones > 0 ? $total_vendido / $transacciones : 0;
 $stmtH = $pdo->prepare("
     SELECT HOUR(fecha) as hora, SUM(total) as total
     FROM ventas
-    WHERE DATE(fecha) = ? AND estado = 'completada'
+    WHERE DATE(fecha) = ? AND estado = 'completada' AND farmacia_id = ?
     GROUP BY HOUR(fecha)
     ORDER BY hora ASC
 ");
-$stmtH->execute([$fecha]);
+$stmtH->execute([$fecha, $fid]);
 $ventas_hora = $stmtH->fetchAll();
 
 $horas = [];
@@ -52,10 +54,10 @@ $stmtLista = $pdo->prepare("
     SELECT v.id, v.fecha, v.total, v.tipo_pago, u.nombre as cajero
     FROM ventas v
     JOIN usuarios u ON v.usuario_id = u.id
-    WHERE DATE(v.fecha) = ? AND v.estado = 'completada'
+    WHERE DATE(v.fecha) = ? AND v.estado = 'completada' AND v.farmacia_id = ?
     ORDER BY v.fecha DESC
 ");
-$stmtLista->execute([$fecha]);
+$stmtLista->execute([$fecha, $fid]);
 $lista_ventas = $stmtLista->fetchAll();
 
 $pagina_titulo = 'Reporte Diario';

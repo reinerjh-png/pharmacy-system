@@ -19,9 +19,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['anular_id'])) {
         try {
             $pdo->beginTransaction();
             
-            // Verificar estado actual
-            $stmtV = $pdo->prepare("SELECT estado FROM ventas WHERE id = ? FOR UPDATE");
-            $stmtV->execute([$anular_id]);
+                    // Verificar estado actual (solo dentro del tenant activo)
+            $stmtV = $pdo->prepare("SELECT estado FROM ventas WHERE id = ? AND farmacia_id = ? FOR UPDATE");
+            $stmtV->execute([$anular_id, farmacia_id()]);
             $venta = $stmtV->fetch();
             
             if (!$venta) {
@@ -44,9 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['anular_id'])) {
                 $pdo->prepare("UPDATE inventario SET stock_actual = stock_actual + ? WHERE id = ?")
                     ->execute([$det['cantidad'], $det['inventario_id']]);
                     
-                // Loguear ajuste (opcional pero recomendado)
-                $pdo->prepare("INSERT INTO ajustes_stock (inventario_id, usuario_id, tipo, cantidad, motivo) VALUES (?, ?, 'entrada', ?, ?)")
-                    ->execute([$det['inventario_id'], $_SESSION['usuario_id'], $det['cantidad'], 'Anulación Venta #' . $anular_id]);
+                                $pdo->prepare("INSERT INTO ajustes_stock (inventario_id, usuario_id, farmacia_id, tipo, cantidad, motivo) VALUES (?, ?, ?, 'entrada', ?, ?)")
+                    ->execute([$det['inventario_id'], $_SESSION['usuario_id'], farmacia_id(), $det['cantidad'], 'Anulación Venta #' . $anular_id]);
             }
             
             $pdo->commit();
@@ -64,8 +63,8 @@ $f_fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
 $f_estado = $_GET['estado'] ?? '';
 $f_cajero = $_GET['cajero'] ?? '';
 
-$where = ["DATE(v.fecha) BETWEEN :inicio AND :fin"];
-$params = [':inicio' => $f_fecha_inicio, ':fin' => $f_fecha_fin];
+$where = ["DATE(v.fecha) BETWEEN :inicio AND :fin", "v.farmacia_id = :fid"];
+$params = [':inicio' => $f_fecha_inicio, ':fin' => $f_fecha_fin, ':fid' => farmacia_id()];
 
 if ($f_estado !== '') {
     $where[] = "v.estado = :estado";
@@ -96,7 +95,10 @@ $ventas = $pdo->prepare($sql);
 $ventas->execute($params);
 $ventas = $ventas->fetchAll();
 
-$cajeros = $pdo->query("SELECT id, nombre FROM usuarios WHERE rol_id = 2")->fetchAll();
+$stmt_caj = $pdo->prepare("SELECT id, nombre FROM usuarios WHERE rol_id = 2 AND farmacia_id = ?");
+$stmt_caj->execute([farmacia_id()]);
+$cajeros = $stmt_caj->fetchAll();
+
 
 $pagina_titulo = 'Historial de Ventas';
 include __DIR__ . '/../../views/layout/header.php';

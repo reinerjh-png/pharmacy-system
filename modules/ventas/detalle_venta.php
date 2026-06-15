@@ -17,9 +17,9 @@ $stmtV = $pdo->prepare("
     SELECT v.*, u.nombre as cajero
     FROM ventas v
     JOIN usuarios u ON v.usuario_id = u.id
-    WHERE v.id = ?
+    WHERE v.id = ? AND v.farmacia_id = ?
 ");
-$stmtV->execute([$id]);
+$stmtV->execute([$id, farmacia_id()]);
 $venta = $stmtV->fetch();
 
 if (!$venta) {

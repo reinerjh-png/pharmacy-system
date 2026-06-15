@@ -26,12 +26,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         try {
             if (!empty($password)) {
-                $hash = password_hash($password, PASSWORD_DEFAULT);
-                $stmt = $pdo->prepare("UPDATE usuarios SET nombre=?, email=?, password=?, rol_id=? WHERE id=?");
-                $stmt->execute([$nombre, $email, $hash, $rol_id, $id]);
+                $hash = password_hash($password, PASSWORD_BCRYPT);
+                $stmt = $pdo->prepare("UPDATE usuarios SET nombre=?, email=?, password_hash=?, rol_id=? WHERE id=? AND farmacia_id=?");
+                $stmt->execute([$nombre, $email, $hash, $rol_id, $id, farmacia_id()]);
             } else {
-                $stmt = $pdo->prepare("UPDATE usuarios SET nombre=?, email=?, rol_id=? WHERE id=?");
-                $stmt->execute([$nombre, $email, $rol_id, $id]);
+                $stmt = $pdo->prepare("UPDATE usuarios SET nombre=?, email=?, rol_id=? WHERE id=? AND farmacia_id=?");
+                $stmt->execute([$nombre, $email, $rol_id, $id, farmacia_id()]);
             }
             $exito = "Usuario actualizado correctamente.";
         } catch (PDOException $e) {
@@ -44,8 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$stmtU = $pdo->prepare("SELECT * FROM usuarios WHERE id = ?");
-$stmtU->execute([$id]);
+$stmtU = $pdo->prepare("SELECT * FROM usuarios WHERE id = ? AND farmacia_id = ?");
+$stmtU->execute([$id, farmacia_id()]);
 $usuario = $stmtU->fetch();
 
 if (!$usuario) {
@@ -53,7 +53,7 @@ if (!$usuario) {
     exit;
 }
 
-$roles = $pdo->query("SELECT * FROM roles")->fetchAll();
+$roles = $pdo->query("SELECT * FROM roles WHERE id IN (1,2,3) ORDER BY id ASC")->fetchAll();
 
 $pagina_titulo = 'Editar Usuario';
 include __DIR__ . '/../../views/layout/header.php';

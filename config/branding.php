@@ -12,16 +12,21 @@ require_once __DIR__ . '/db.php';
  * Usa caché de sesión para evitar consultas repetidas por petición/sesión.
  */
 function branding(): array {
-    // Cache de sesión
-    if (isset($_SESSION['_branding_cache']) && is_array($_SESSION['_branding_cache'])) {
-        return $_SESSION['_branding_cache'];
+    // Cache de sesión — incluye farmacia_id para que no haya cruces entre tenants
+    $fid = (int)($_SESSION['farmacia_id'] ?? 1);
+    $cache_key = '_branding_cache_' . $fid;
+
+    if (isset($_SESSION[$cache_key]) && is_array($_SESSION[$cache_key])) {
+        return $_SESSION[$cache_key];
     }
 
     $defaults = _branding_defaults();
 
     try {
         $pdo  = conectar();
-        $stmt = $pdo->query("SELECT * FROM branding WHERE activo = 1 ORDER BY id ASC LIMIT 1");
+        // Filtrar por farmacia_id del tenant activo
+        $stmt = $pdo->prepare("SELECT * FROM branding WHERE farmacia_id = ? AND activo = 1 ORDER BY id ASC LIMIT 1");
+        $stmt->execute([$fid]);
         $row  = $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : null;
 
         if ($row) {
@@ -39,9 +44,9 @@ function branding(): array {
     $config['_color_claro']     = _color_lighten($config['farmacia_color_primario'], 88);
     $config['_color_muy_oscuro']= _color_darken($config['farmacia_color_primario'], 30);
 
-    // Guardar en sesión
+    // Guardar en sesión con clave por farmacia
     if (session_status() === PHP_SESSION_ACTIVE) {
-        $_SESSION['_branding_cache'] = $config;
+        $_SESSION[$cache_key] = $config;
     }
 
     return $config;
@@ -52,6 +57,9 @@ function branding(): array {
  * Llamar después de guardar cambios en el panel de ajustes.
  */
 function branding_invalidar_cache(): void {
+    $fid = (int)($_SESSION['farmacia_id'] ?? 1);
+    unset($_SESSION['_branding_cache_' . $fid]);
+    // Compatibilidad hacia atrás
     unset($_SESSION['_branding_cache']);
 }
 

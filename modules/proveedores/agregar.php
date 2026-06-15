@@ -20,8 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "La Razón Social (nombre) es obligatoria.";
     } else {
         try {
-            $stmt = $pdo->prepare("INSERT INTO proveedores (nombre, ruc, telefono, email, direccion) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$nombre, $ruc ?: null, $telefono ?: null, $email ?: null, $direccion ?: null]);
+            $stmt = $pdo->prepare("INSERT INTO proveedores (nombre, ruc, telefono, email, direccion, farmacia_id) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$nombre, $ruc ?: null, $telefono ?: null, $email ?: null, $direccion ?: null, farmacia_id()]);
             header('Location: lista.php');
             exit;
         } catch (PDOException $e) {

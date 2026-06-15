@@ -8,10 +8,10 @@ $rol_id = (int)$_SESSION['rol_id'];
 
 // Redirección según rol (Solo admin ve el dashboard)
 if ($rol_id === 2) {
-    header('Location: /modules/ventas/nueva_venta.php');
+    header('Location: ' . BASE_URL . '/modules/ventas/nueva_venta.php');
     exit;
 } elseif ($rol_id === 3) {
-    header('Location: /modules/inventario/lista_productos.php');
+    header('Location: ' . BASE_URL . '/modules/inventario/lista_productos.php');
     exit;
 } elseif ($rol_id !== 1) {
     echo "Rol no autorizado.";
@@ -20,44 +20,51 @@ if ($rol_id === 2) {
 
 $pdo = conectar();
 $hoy = date('Y-m-d');
+$fid = farmacia_id();
 
 // 1. Total ventas del día
-$stmtVentas = $pdo->prepare("SELECT SUM(total) as total_vendido, COUNT(id) as numero_ventas FROM ventas WHERE DATE(fecha) = :hoy AND estado = 'completada'");
-$stmtVentas->execute([':hoy' => $hoy]);
+$stmtVentas = $pdo->prepare("SELECT SUM(total) as total_vendido, COUNT(id) as numero_ventas FROM ventas WHERE DATE(fecha) = :hoy AND estado = 'completada' AND farmacia_id = :fid");
+$stmtVentas->execute([':hoy' => $hoy, ':fid' => $fid]);
 $datosVentas = $stmtVentas->fetch();
 $total_vendido = $datosVentas['total_vendido'] ?? 0;
 $numero_ventas = $datosVentas['numero_ventas'] ?? 0;
 
-// 2. Stock crítico
-$stmtCritico = $pdo->query("SELECT COUNT(*) FROM inventario WHERE stock_actual <= stock_minimo");
+// 2. Stock crítico (productos del tenant)
+$stmtCritico = $pdo->prepare("SELECT COUNT(i.id) FROM inventario i JOIN productos p ON i.producto_id = p.id WHERE i.stock_actual <= i.stock_minimo AND p.farmacia_id = ?");
+$stmtCritico->execute([$fid]);
 $stock_critico = $stmtCritico->fetchColumn();
 
-// 3. Próximos a vencer
-$stmtVencer = $pdo->query("SELECT COUNT(*) FROM inventario WHERE fecha_vencimiento <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)");
+// 3. Próximos a vencer (inventario del tenant)
+$stmtVencer = $pdo->prepare("SELECT COUNT(i.id) FROM inventario i JOIN productos p ON i.producto_id = p.id WHERE i.fecha_vencimiento <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) AND p.farmacia_id = ?");
+$stmtVencer->execute([$fid]);
 $proximos_vencer = $stmtVencer->fetchColumn();
 $vence_pronto = $proximos_vencer;
 
 // Semáforo de vencimientos
-$stmtRojo = $pdo->query("SELECT COUNT(*) FROM inventario WHERE fecha_vencimiento IS NOT NULL AND fecha_vencimiento <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)");
+$stmtRojo = $pdo->prepare("SELECT COUNT(i.id) FROM inventario i JOIN productos p ON i.producto_id = p.id WHERE i.fecha_vencimiento IS NOT NULL AND i.fecha_vencimiento <= DATE_ADD(CURDATE(), INTERVAL 7 DAY) AND p.farmacia_id = ?");
+$stmtRojo->execute([$fid]);
 $semaforo_rojo = $stmtRojo->fetchColumn();
 
-$stmtAmarillo = $pdo->query("SELECT COUNT(*) FROM inventario WHERE fecha_vencimiento > DATE_ADD(CURDATE(), INTERVAL 7 DAY) AND fecha_vencimiento <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)");
+$stmtAmarillo = $pdo->prepare("SELECT COUNT(i.id) FROM inventario i JOIN productos p ON i.producto_id = p.id WHERE i.fecha_vencimiento > DATE_ADD(CURDATE(), INTERVAL 7 DAY) AND i.fecha_vencimiento <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) AND p.farmacia_id = ?");
+$stmtAmarillo->execute([$fid]);
 $semaforo_amarillo = $stmtAmarillo->fetchColumn();
 
-$stmtVerde = $pdo->query("SELECT COUNT(*) FROM inventario WHERE fecha_vencimiento > DATE_ADD(CURDATE(), INTERVAL 30 DAY) OR fecha_vencimiento IS NULL");
+$stmtVerde = $pdo->prepare("SELECT COUNT(i.id) FROM inventario i JOIN productos p ON i.producto_id = p.id WHERE (i.fecha_vencimiento > DATE_ADD(CURDATE(), INTERVAL 30 DAY) OR i.fecha_vencimiento IS NULL) AND p.farmacia_id = ?");
+$stmtVerde->execute([$fid]);
 $semaforo_verde = $stmtVerde->fetchColumn();
 
 $es_admin = ($rol_id === 1);
 
 // Gráfico: Ventas últimos 7 días — UNA sola query (elimina N+1 de 7 queries)
-$stmtGrafico = $pdo->query("
+$stmtGrafico = $pdo->prepare("
     SELECT DATE(fecha) as dia, SUM(total) as total 
     FROM ventas 
-    WHERE fecha >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND estado = 'completada'
+    WHERE fecha >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND estado = 'completada' AND farmacia_id = ?
     GROUP BY DATE(fecha) 
     ORDER BY dia ASC
 ");
-$ventas_semana = $stmtGrafico->fetchAll(PDO::FETCH_KEY_PAIR); // ['Y-m-d' => total]
+$stmtGrafico->execute([$fid]);
+$ventas_semana = $stmtGrafico->fetchAll(PDO::FETCH_KEY_PAIR);
 
 // Rellenar días vacíos con PHP — sin queries adicionales
 $fechas = [];

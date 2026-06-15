@@ -9,6 +9,7 @@ $pdo = conectar();
 $inicio = $_GET['inicio'] ?? date('Y-m-01');
 $fin = $_GET['fin'] ?? date('Y-m-d');
 
+$fid = farmacia_id();
 $sql = "
     SELECT p.nombre, p.codigo_barras, c.nombre as categoria, 
            SUM(dv.cantidad) as cantidad_total, 
@@ -19,12 +20,13 @@ $sql = "
     LEFT JOIN categorias c ON p.categoria_id = c.id
     WHERE v.estado = 'completada' 
       AND DATE(v.fecha) BETWEEN :inicio AND :fin
+      AND v.farmacia_id = :fid
     GROUP BY p.id
     ORDER BY cantidad_total DESC
     LIMIT 15
 ";
 $stmt = $pdo->prepare($sql);
-$stmt->execute([':inicio' => $inicio, ':fin' => $fin]);
+$stmt->execute([':inicio' => $inicio, ':fin' => $fin, ':fid' => $fid]);
 $productos = $stmt->fetchAll();
 
 $pagina_titulo = 'Productos Más Vendidos';

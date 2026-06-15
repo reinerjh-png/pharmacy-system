@@ -11,6 +11,7 @@ $fin = $_GET['fin'] ?? date('Y-m-d');
 
 // Calculamos la rotación: Ventas (salidas) vs Stock Actual
 // Se ordenará por el índice de rotación (Ventas / (Stock + 1) para evitar división por cero)
+$fid = farmacia_id();
 $sql = "
     SELECT p.id, p.nombre, p.codigo_barras, c.nombre as categoria,
            COALESCE((SELECT SUM(stock_actual) FROM inventario WHERE producto_id = p.id), 0) as stock_actual,
@@ -19,13 +20,13 @@ $sql = "
     LEFT JOIN categorias c ON p.categoria_id = c.id
     LEFT JOIN detalle_ventas dv ON p.id = dv.producto_id
     LEFT JOIN ventas v ON dv.venta_id = v.id AND v.estado = 'completada' AND DATE(v.fecha) BETWEEN :inicio AND :fin
-    WHERE p.activo = 1
+    WHERE p.activo = 1 AND p.farmacia_id = :fid
     GROUP BY p.id
     ORDER BY (COALESCE(SUM(dv.cantidad), 0) / (COALESCE((SELECT SUM(stock_actual) FROM inventario WHERE producto_id = p.id), 0) + 1)) DESC, cantidad_vendida DESC
     LIMIT 50
 ";
 $stmt = $pdo->prepare($sql);
-$stmt->execute([':inicio' => $inicio, ':fin' => $fin]);
+$stmt->execute([':inicio' => $inicio, ':fin' => $fin, ':fid' => $fid]);
 $productos = $stmt->fetchAll();
 
 $pagina_titulo = 'Rotación de Inventario';

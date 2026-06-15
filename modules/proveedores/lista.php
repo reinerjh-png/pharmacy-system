@@ -13,7 +13,7 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['desactivar_id'])) {
     $id = (int)$_POST['desactivar_id'];
     try {
-        $pdo->prepare("UPDATE proveedores SET activo = 0 WHERE id = ?")->execute([$id]);
+        $pdo->prepare("UPDATE proveedores SET activo = 0 WHERE id = ? AND farmacia_id = ?")->execute([$id, farmacia_id()]);
         $exito = "Proveedor desactivado correctamente.";
     } catch (PDOException $e) {
         $error = "Error al desactivar proveedor: " . $e->getMessage();
@@ -24,14 +24,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['desactivar_id'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['activar_id'])) {
     $id = (int)$_POST['activar_id'];
     try {
-        $pdo->prepare("UPDATE proveedores SET activo = 1 WHERE id = ?")->execute([$id]);
+        $pdo->prepare("UPDATE proveedores SET activo = 1 WHERE id = ? AND farmacia_id = ?")->execute([$id, farmacia_id()]);
         $exito = "Proveedor activado correctamente.";
     } catch (PDOException $e) {
         $error = "Error al activar proveedor: " . $e->getMessage();
     }
 }
 
-$proveedores = $pdo->query("SELECT * FROM proveedores ORDER BY nombre ASC")->fetchAll();
+$stmt = $pdo->prepare("SELECT * FROM proveedores WHERE farmacia_id = ? ORDER BY nombre ASC");
+$stmt->execute([farmacia_id()]);
+$proveedores = $stmt->fetchAll();
 
 $pagina_titulo = 'Proveedores';
 include __DIR__ . '/../../views/layout/header.php';

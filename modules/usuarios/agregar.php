@@ -11,17 +11,18 @@ $exito = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nombre = trim($_POST['nombre']);
-    $email = trim($_POST['email']);
+    $email  = trim($_POST['email']);
     $password = $_POST['password'];
     $rol_id = (int)$_POST['rol_id'];
 
     if (empty($nombre) || empty($email) || empty($password) || empty($rol_id)) {
         $error = "Todos los campos son obligatorios.";
     } else {
-        $hash = password_hash($password, PASSWORD_DEFAULT);
+        $hash = password_hash($password, PASSWORD_BCRYPT);
         try {
-            $stmt = $pdo->prepare("INSERT INTO usuarios (nombre, email, password, rol_id) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$nombre, $email, $hash, $rol_id]);
+            // Asignar farmacia_id del admin que crea el usuario
+            $stmt = $pdo->prepare("INSERT INTO usuarios (nombre, email, password_hash, rol_id, farmacia_id) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$nombre, $email, $hash, $rol_id, farmacia_id()]);
             header('Location: lista.php');
             exit;
         } catch (PDOException $e) {
@@ -34,7 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$roles = $pdo->query("SELECT * FROM roles")->fetchAll();
+// Solo roles de farmacia (excluyendo superadmin que no existe en esta tabla)
+$roles = $pdo->query("SELECT * FROM roles WHERE id IN (1,2,3) ORDER BY id ASC")->fetchAll();
 
 $pagina_titulo = 'Agregar Usuario';
 include __DIR__ . '/../../views/layout/header.php';

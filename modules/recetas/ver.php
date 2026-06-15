@@ -17,9 +17,9 @@ $stmtR = $pdo->prepare("
     SELECT r.*, u.nombre as despachador
     FROM recetas r
     JOIN usuarios u ON r.usuario_id = u.id
-    WHERE r.id = ?
+    WHERE r.id = ? AND r.farmacia_id = ?
 ");
-$stmtR->execute([$id]);
+$stmtR->execute([$id, farmacia_id()]);
 $receta = $stmtR->fetch();
 
 if (!$receta) {

@@ -7,14 +7,45 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 /**
- * Verifica que el usuario tenga una sesión activa
- * Redirige al login si no hay sesión
+ * Verifica que el usuario tenga una sesión activa y su farmacia esté activa.
+ * Redirige al login si no hay sesión o la farmacia está suspendida.
  */
 function verificar_sesion(): void {
     if (empty($_SESSION['usuario_id']) || !isset($_SESSION['rol_id'])) {
-        header('Location: /auth/login.php');
+        $_SESSION = array();
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
+        }
+        session_destroy();
+        header('Location: ' . BASE_URL . '/auth/login.php');
         exit;
     }
+    // Verificar que la farmacia no esté suspendida
+    if (isset($_SESSION['farmacia_suspendida']) && $_SESSION['farmacia_suspendida']) {
+        session_destroy();
+        header('Location: ' . BASE_URL . '/auth/login.php?suspendida=1');
+        exit;
+    }
+}
+
+/**
+ * Retorna el farmacia_id de la sesión activa.
+ * Termina con error si no hay farmacia en sesión (no debería ocurrir en uso normal).
+ */
+function farmacia_id(): int {
+    if (empty($_SESSION['farmacia_id'])) {
+        // Si no hay farmacia_id (sesión antigua), cerrar sesión por seguridad
+        $_SESSION = array();
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
+        }
+        session_destroy();
+        header('Location: ' . BASE_URL . '/auth/login.php');
+        exit;
+    }
+    return (int)$_SESSION['farmacia_id'];
 }
 
 // ====================================================
@@ -66,7 +97,7 @@ function verificar_permiso(string $modulo): void {
 }
 
 /**
- * Verifica si el usuario actual es administrador
+ * Verifica si el usuario actual es administrador de farmacia
  */
 function es_admin(): bool {
     return isset($_SESSION['rol_id']) && (int)$_SESSION['rol_id'] === 1;

@@ -6,7 +6,7 @@ require_once __DIR__ . '/../../config/farmacia.php';
 
 $_brand  = branding();
 $rol_id  = (int)($_SESSION['rol_id'] ?? 0);
-$base_url = '';
+$base_url = BASE_URL;
 
 // ── Cabeceras de Seguridad HTTP ──
 header('X-Content-Type-Options: nosniff');
@@ -38,6 +38,7 @@ $_brand_logo   = $_brand['farmacia_logo_url'] ? htmlspecialchars($_brand['farmac
     <!-- CSS Variables dinámicas de Branding -->
     <?= branding_css_vars() ?>
 
+    <script>window.BASE_URL = '<?= $base_url ?>';</script>
     <?php if (isset($extra_css)): echo $extra_css; endif; ?>
 </head>
 <body>

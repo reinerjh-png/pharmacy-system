@@ -21,6 +21,8 @@ define('DB_USER',    getenv('DB_USER')    ?: 'root');
 define('DB_PASS',    getenv('DB_PASS')    ?: '');
 define('DB_CHARSET', 'utf8mb4');
 
+define('BASE_URL', '/sys-farmacia');
+
 /**
  * Obtiene una conexión PDO singleton a la base de datos
  * @return PDO

@@ -33,9 +33,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $total_compra += ((int)$cantidades[$i] * (float)$p_compras[$i]);
             }
             
-            // Insertar compra
-            $stmtC = $pdo->prepare("INSERT INTO compras (proveedor_id, usuario_id, numero_factura, total, observaciones) VALUES (?, ?, ?, ?, ?)");
-            $stmtC->execute([$proveedor_id, $_SESSION['usuario_id'], $factura, $total_compra, $observaciones]);
+            // Insertar compra con farmacia_id
+            $stmtC = $pdo->prepare("INSERT INTO compras (proveedor_id, usuario_id, farmacia_id, numero_factura, total, observaciones) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmtC->execute([$proveedor_id, $_SESSION['usuario_id'], farmacia_id(), $factura, $total_compra, $observaciones]);
             $compra_id = $pdo->lastInsertId();
             
             // Iterar sobre productos
@@ -82,8 +82,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$proveedores = $pdo->query("SELECT id, nombre, ruc FROM proveedores WHERE activo = 1 ORDER BY nombre")->fetchAll();
-$productos = $pdo->query("SELECT id, nombre FROM productos WHERE activo = 1 ORDER BY nombre")->fetchAll();
+$stmtProv = $pdo->prepare("SELECT id, nombre, ruc FROM proveedores WHERE activo = 1 AND farmacia_id = ? ORDER BY nombre");
+$stmtProv->execute([farmacia_id()]);
+$proveedores = $stmtProv->fetchAll();
+
+$stmtProd = $pdo->prepare("SELECT id, nombre FROM productos WHERE activo = 1 AND farmacia_id = ? ORDER BY nombre");
+$stmtProd->execute([farmacia_id()]);
+$productos = $stmtProd->fetchAll();
 
 $pagina_titulo = 'Registrar Compra';
 include __DIR__ . '/../../views/layout/header.php';

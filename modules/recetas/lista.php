@@ -12,8 +12,8 @@ $f_fecha_inicio = $_GET['fecha_inicio'] ?? date('Y-m-01');
 $f_fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
 $f_paciente = trim($_GET['paciente'] ?? '');
 
-$where = ["DATE(r.fecha) BETWEEN :inicio AND :fin"];
-$params = [':inicio' => $f_fecha_inicio, ':fin' => $f_fecha_fin];
+$where = ["DATE(r.fecha) BETWEEN :inicio AND :fin", "r.farmacia_id = :fid"];
+$params = [':inicio' => $f_fecha_inicio, ':fin' => $f_fecha_fin, ':fid' => farmacia_id()];
 
 if ($f_paciente !== '') {
     $where[] = "r.nombre_paciente LIKE :paciente";

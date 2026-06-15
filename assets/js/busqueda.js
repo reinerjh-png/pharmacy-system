@@ -14,7 +14,7 @@ function buscarProducto() {
 
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
-        fetch(`/api/buscar_producto.php?q=${encodeURIComponent(q)}`)
+        fetch(`${window.BASE_URL || ''}/api/buscar_producto.php?q=${encodeURIComponent(q)}`)
             .then(res => res.json())
             .then(data => {
                 resultadosDiv.innerHTML = '';

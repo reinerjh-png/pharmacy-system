@@ -18,7 +18,7 @@ if (strlen($q) < 2) {
 }
 
 $pdo = conectar();
-// Agrupar inventario por producto
+// Agrupar inventario por producto — filtrado por farmacia del tenant activo
 $sql = "
     SELECT p.id as producto_id, p.nombre, p.nombre_generico, p.codigo_barras, p.requiere_receta,
            SUM(i.stock_actual) as stock, MAX(i.precio_venta) as precio_venta
@@ -26,13 +26,15 @@ $sql = "
     JOIN inventario i ON p.id = i.producto_id
     WHERE p.activo = 1 
       AND i.stock_actual > 0
+      AND p.farmacia_id = :fid
       AND (p.nombre LIKE :q OR p.nombre_generico LIKE :q OR p.codigo_barras LIKE :q)
     GROUP BY p.id
     LIMIT 10
 ";
 
 $stmt = $pdo->prepare($sql);
-$stmt->execute([':q' => "%$q%"]);
+$stmt->execute([':q' => "%$q%", ':fid' => farmacia_id()]);
 $resultados = $stmt->fetchAll();
 
 echo json_encode($resultados);
+

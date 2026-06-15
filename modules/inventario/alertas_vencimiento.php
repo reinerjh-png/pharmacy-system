@@ -15,9 +15,12 @@ $sql = "
     WHERE i.stock_actual > 0 
       AND i.fecha_vencimiento IS NOT NULL 
       AND DATEDIFF(i.fecha_vencimiento, CURDATE()) <= 90
+      AND p.farmacia_id = ?
     ORDER BY i.fecha_vencimiento ASC
 ";
-$alertas = $pdo->query($sql)->fetchAll();
+$stmt = $pdo->prepare($sql);
+$stmt->execute([farmacia_id()]);
+$alertas = $stmt->fetchAll();
 
 $pagina_titulo = 'Alertas de Vencimiento';
 include __DIR__ . '/../../views/layout/header.php';

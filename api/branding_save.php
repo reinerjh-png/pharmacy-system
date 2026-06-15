@@ -109,11 +109,14 @@ if (!empty($_FILES['logo_file']['name'])) {
 try {
     $pdo = conectar();
 
-    // Verificar si ya existe un registro
-    $check = $pdo->query("SELECT id FROM branding WHERE activo = 1 LIMIT 1")->fetch();
+        // Verificar si ya existe un registro para esta farmacia
+    $fid = (int)$_SESSION['farmacia_id'];
+    $check = $pdo->prepare("SELECT id FROM branding WHERE farmacia_id = ? AND activo = 1 LIMIT 1");
+    $check->execute([$fid]);
+    $check = $check->fetch();
 
     if ($check) {
-        // Actualizar
+        // Actualizar registro de esta farmacia
         $sql = "UPDATE branding SET
                     farmacia_nombre           = :nombre,
                     farmacia_slogan           = :slogan,
@@ -124,14 +127,15 @@ try {
                     farmacia_telefono         = :telefono,
                     farmacia_ruc              = :ruc,
                     actualizado_por           = :uid
-                WHERE activo = 1";
+                WHERE farmacia_id = :fid AND activo = 1";
     } else {
-        // Insertar primera vez
-        $sql = "INSERT INTO branding (farmacia_nombre, farmacia_slogan, farmacia_color_primario, farmacia_color_secundario, farmacia_logo_url, farmacia_direccion, farmacia_telefono, farmacia_ruc, activo, actualizado_por)
-                VALUES (:nombre, :slogan, :color_p, :color_s, :logo_url, :direccion, :telefono, :ruc, 1, :uid)";
+        // Insertar primera vez para esta farmacia
+        $sql = "INSERT INTO branding (farmacia_id, farmacia_nombre, farmacia_slogan, farmacia_color_primario, farmacia_color_secundario, farmacia_logo_url, farmacia_direccion, farmacia_telefono, farmacia_ruc, activo, actualizado_por)
+                VALUES (:fid, :nombre, :slogan, :color_p, :color_s, :logo_url, :direccion, :telefono, :ruc, 1, :uid)";
     }
 
     $params = [
+        ':fid'       => $fid,
         ':nombre'    => $nombre,
         ':slogan'    => $slogan ?: null,
         ':color_p'   => $color_p,

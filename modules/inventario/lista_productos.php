@@ -10,8 +10,8 @@ $pdo = conectar();
 $filtro_cat = $_GET['categoria_id'] ?? '';
 $filtro_nombre = $_GET['q'] ?? '';
 
-$where = ["1=1"];
-$params = [];
+$where = ["p.farmacia_id = :fid"];
+$params = [':fid' => farmacia_id()];
 
 if ($filtro_cat !== '') {
     $where[] = "p.categoria_id = :cat";

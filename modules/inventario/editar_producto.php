@@ -29,8 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Nombre, categoría y laboratorio son obligatorios.";
     } else {
         try {
-            $stmtP = $pdo->prepare("UPDATE productos SET nombre=?, nombre_generico=?, codigo_barras=?, categoria_id=?, laboratorio_id=?, unidad_medida=?, requiere_receta=?, activo=? WHERE id=?");
-            $stmtP->execute([$nombre, $generico, $codigo ?: null, $categoria_id, $laboratorio_id, $unidad, $receta, $activo, $id]);
+            $stmtP = $pdo->prepare("UPDATE productos SET nombre=?, nombre_generico=?, codigo_barras=?, categoria_id=?, laboratorio_id=?, unidad_medida=?, requiere_receta=?, activo=? WHERE id=? AND farmacia_id=?");
+            $stmtP->execute([$nombre, $generico, $codigo ?: null, $categoria_id, $laboratorio_id, $unidad, $receta, $activo, $id, farmacia_id()]);
             $exito = "Producto actualizado correctamente.";
         } catch (PDOException $e) {
             if ($e->getCode() == 23000) {
@@ -42,9 +42,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Cargar producto
-$stmtProd = $pdo->prepare("SELECT * FROM productos WHERE id = ?");
-$stmtProd->execute([$id]);
+// Cargar producto asegurando que pertenece a la farmacia
+$stmtProd = $pdo->prepare("SELECT * FROM productos WHERE id = ? AND farmacia_id = ?");
+$stmtProd->execute([$id, farmacia_id()]);
 $producto = $stmtProd->fetch();
 
 if (!$producto) {

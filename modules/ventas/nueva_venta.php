@@ -29,8 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             // Insertar Cabecera de Venta
-            $stmtVenta = $pdo->prepare("INSERT INTO ventas (usuario_id, subtotal, total, tipo_pago, monto_efectivo, estado) VALUES (?, ?, ?, ?, ?, 'completada')");
-            $stmtVenta->execute([$_SESSION['usuario_id'], $subtotal_venta, $subtotal_venta, $tipo_pago, $monto_efectivo]);
+            $stmtVenta = $pdo->prepare("INSERT INTO ventas (usuario_id, farmacia_id, subtotal, total, tipo_pago, monto_efectivo, estado) VALUES (?, ?, ?, ?, ?, ?, 'completada')");
+            $stmtVenta->execute([$_SESSION['usuario_id'], farmacia_id(), $subtotal_venta, $subtotal_venta, $tipo_pago, $monto_efectivo]);
             $venta_id = $pdo->lastInsertId();
             
             // Procesar cada producto con regla FIFO
@@ -39,9 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $cant_requerida = (int)$item['cantidad'];
                 $precio_uni = (float)$item['precio_venta'];
                 
-                // Buscar lotes de más antiguo a más nuevo
-                $stmtLotes = $pdo->prepare("SELECT id, stock_actual FROM inventario WHERE producto_id = ? AND stock_actual > 0 ORDER BY fecha_vencimiento ASC FOR UPDATE");
-                $stmtLotes->execute([$p_id]);
+                // Buscar lotes de más antiguo a más nuevo (solo del tenant activo)
+                $stmtLotes = $pdo->prepare("SELECT i.id, i.stock_actual FROM inventario i JOIN productos p ON i.producto_id = p.id WHERE i.producto_id = ? AND i.stock_actual > 0 AND p.farmacia_id = ? ORDER BY i.fecha_vencimiento ASC FOR UPDATE");
+                $stmtLotes->execute([$p_id, farmacia_id()]);
                 $lotes = $stmtLotes->fetchAll();
                 
                 $cant_restante = $cant_requerida;

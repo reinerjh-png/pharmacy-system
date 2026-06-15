@@ -50,9 +50,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmtUpd = $pdo->prepare("UPDATE inventario SET stock_actual = ? WHERE id = ?");
             $stmtUpd->execute([$nuevo_stock, $inventario_id]);
 
-            // Registrar log
-            $stmtLog = $pdo->prepare("INSERT INTO ajustes_stock (inventario_id, usuario_id, tipo, cantidad, motivo) VALUES (?, ?, ?, ?, ?)");
-            $stmtLog->execute([$inventario_id, $usuario_id, $tipo, $cantidad, $motivo]);
+            // Registrar log con farmacia_id
+            $stmtLog = $pdo->prepare("INSERT INTO ajustes_stock (inventario_id, usuario_id, farmacia_id, tipo, cantidad, motivo) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmtLog->execute([$inventario_id, $usuario_id, farmacia_id(), $tipo, $cantidad, $motivo]);
 
             $pdo->commit();
             $exito = "Stock ajustado correctamente. Nuevo stock: $nuevo_stock";
@@ -63,14 +63,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Obtener todos los lotes disponibles para el selector
-$lotes = $pdo->query("
+// Obtener todos los lotes disponibles para el selector, solo del tenant activo
+$lotes = $pdo->prepare("
     SELECT i.id, p.nombre, i.lote, i.stock_actual, i.fecha_vencimiento 
     FROM inventario i
     JOIN productos p ON i.producto_id = p.id
-    WHERE p.activo = 1
+    WHERE p.activo = 1 AND p.farmacia_id = ?
     ORDER BY p.nombre, i.fecha_vencimiento
-")->fetchAll();
+");
+$lotes->execute([farmacia_id()]);
+$lotes = $lotes->fetchAll();
 
 $pagina_titulo = 'Ajustar Stock';
 include __DIR__ . '/../../views/layout/header.php';
