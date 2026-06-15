@@ -12,7 +12,7 @@ if (session_status() === PHP_SESSION_NONE) {
  */
 function verificar_sesion(): void {
     if (empty($_SESSION['usuario_id']) || !isset($_SESSION['rol_id'])) {
-        header('Location: /sys-farmacia/auth/login.php');
+        header('Location: /auth/login.php');
         exit;
     }
 }
@@ -105,5 +105,5 @@ function nombre_rol(): string {
  * Obtiene la URL base del sistema
  */
 function base_url(): string {
-    return '/sys-farmacia';
+    return '';
 }

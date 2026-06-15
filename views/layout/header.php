@@ -6,7 +6,7 @@ require_once __DIR__ . '/../../config/farmacia.php';
 
 $_brand  = branding();
 $rol_id  = (int)($_SESSION['rol_id'] ?? 0);
-$base_url = '/sys-farmacia';
+$base_url = '';
 
 // ── Cabeceras de Seguridad HTTP ──
 header('X-Content-Type-Options: nosniff');

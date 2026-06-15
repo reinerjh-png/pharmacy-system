@@ -8,10 +8,10 @@ $rol_id = (int)$_SESSION['rol_id'];
 
 // Redirección según rol (Solo admin ve el dashboard)
 if ($rol_id === 2) {
-    header('Location: /sys-farmacia/modules/ventas/nueva_venta.php');
+    header('Location: /modules/ventas/nueva_venta.php');
     exit;
 } elseif ($rol_id === 3) {
-    header('Location: /sys-farmacia/modules/inventario/lista_productos.php');
+    header('Location: /modules/inventario/lista_productos.php');
     exit;
 } elseif ($rol_id !== 1) {
     echo "Rol no autorizado.";

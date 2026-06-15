@@ -102,7 +102,7 @@ if (!empty($_FILES['logo_file']['name'])) {
         json_out(false, 'No se pudo guardar el archivo. Verifica los permisos de la carpeta uploads/branding/.');
     }
 
-    $logo_final = '/sys-farmacia/uploads/branding/' . $filename;
+    $logo_final = '/uploads/branding/' . $filename;
 }
 
 // ── Guardar en BD ──

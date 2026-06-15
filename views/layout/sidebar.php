@@ -1,7 +1,7 @@
 <?php
 // views/layout/sidebar.php
 $rol_id      = (int)($_SESSION['rol_id'] ?? 0);
-$base_url    = '/sys-farmacia';
+$base_url    = '';
 $current_page = basename($_SERVER['PHP_SELF']);
 $current_dir  = basename(dirname($_SERVER['PHP_SELF']));
 

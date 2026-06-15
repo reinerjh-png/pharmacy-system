@@ -9,7 +9,7 @@ verificar_sesion();
 
 // Solo administradores
 if ((int)$_SESSION['rol_id'] !== 1) {
-    header('Location: /sys-farmacia/index.php');
+    header('Location: /index.php');
     exit;
 }
 
@@ -628,7 +628,7 @@ form.addEventListener('submit', async (e) => {
     const formData = new FormData(form);
 
     try {
-        const res = await fetch('/sys-farmacia/api/branding_save.php', {
+        const res = await fetch('/api/branding_save.php', {
             method: 'POST',
             body: formData,
         });
@@ -657,7 +657,7 @@ document.getElementById('btn-reset').addEventListener('click', async () => {
     if (!confirm('¿Seguro que quieres restablecer todos los valores de branding a los valores por defecto del sistema? Esto no se puede deshacer.')) return;
 
     try {
-        const res = await fetch('/sys-farmacia/api/branding_reset.php', { method: 'POST' });
+        const res = await fetch('/api/branding_reset.php', { method: 'POST' });
         const data = await res.json();
         if (data.success) {
             showToast('Branding restablecido.', 'success');
