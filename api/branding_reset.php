@@ -26,16 +26,21 @@ require_once __DIR__ . '/../config/branding.php';
 
 try {
     $pdo = conectar();
+    $fid = (int)$_SESSION['farmacia_id'];
+    $uid = (int)$_SESSION['usuario_id'];
     
-    // Obtenemos los valores por defecto del helper
-    $defaults = _branding_defaults();
+    // Obtenemos el nombre real de la farmacia desde la tabla 'farmacias'
+    $stmtF = $pdo->prepare("SELECT nombre FROM farmacias WHERE id = ? LIMIT 1");
+    $stmtF->execute([$fid]);
+    $farmacia = $stmtF->fetch();
+    $nombre_real = $farmacia ? $farmacia['nombre'] : 'Mi Farmacia';
 
-    // Actualizamos la base de datos a los valores por defecto
+    // Actualizamos la base de datos a los valores neutros pero preservando el nombre
     $sql = "UPDATE branding SET
                 farmacia_nombre           = :nombre,
-                farmacia_slogan           = :slogan,
-                farmacia_color_primario   = :color_p,
-                farmacia_color_secundario = :color_s,
+                farmacia_slogan           = 'Sistema de Gestión',
+                farmacia_color_primario   = '#059669',
+                farmacia_color_secundario = '#10b981',
                 farmacia_logo_url         = NULL,
                 farmacia_direccion        = NULL,
                 farmacia_telefono         = NULL,
@@ -44,12 +49,9 @@ try {
             WHERE activo = 1 AND farmacia_id = :fid";
 
     $params = [
-        ':nombre'  => $defaults['farmacia_nombre'],
-        ':slogan'  => $defaults['farmacia_slogan'],
-        ':color_p' => $defaults['farmacia_color_primario'],
-        ':color_s' => $defaults['farmacia_color_secundario'],
-        ':uid'     => (int)$_SESSION['usuario_id'],
-        ':fid'     => (int)$_SESSION['farmacia_id']
+        ':nombre'  => $nombre_real,
+        ':uid'     => $uid,
+        ':fid'     => $fid
     ];
 
     $stmt = $pdo->prepare($sql);

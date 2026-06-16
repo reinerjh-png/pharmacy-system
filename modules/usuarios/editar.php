@@ -33,6 +33,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $pdo->prepare("UPDATE usuarios SET nombre=?, email=?, rol_id=? WHERE id=? AND farmacia_id=?");
                 $stmt->execute([$nombre, $email, $rol_id, $id, farmacia_id()]);
             }
+            
+            // Si el usuario se edita a sí mismo, actualizar la sesión para que la UI (como el sidebar) se refresque
+            if ($id == $_SESSION['usuario_id']) {
+                $_SESSION['nombre'] = $nombre;
+                $_SESSION['rol_id'] = $rol_id;
+            }
+            
             $exito = "Usuario actualizado correctamente.";
         } catch (PDOException $e) {
             if ($e->getCode() == 23000) {

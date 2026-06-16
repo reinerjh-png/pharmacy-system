@@ -1,5 +1,16 @@
 <?php
 // index.php
+if (session_status() === PHP_SESSION_NONE) session_start();
+
+require_once __DIR__ . '/auth/session_superadmin.php';
+
+// Si es super admin, mostrar el dashboard global del SaaS
+if (es_super_admin()) {
+    require __DIR__ . '/superadmin/dashboard.php';
+    exit;
+}
+
+// Si no, flujo normal de usuario de farmacia
 require_once __DIR__ . '/auth/session_check.php';
 require_once __DIR__ . '/config/db.php';
 

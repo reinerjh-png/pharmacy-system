@@ -5,17 +5,14 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../config/db.php';
-require_once __DIR__ . '/../config/branding.php';
-
-// En login no usamos farmacia.php para no duplicar includes
-$_br = branding();
-$_br_nombre   = htmlspecialchars($_br['farmacia_nombre']);
-$_br_slogan   = htmlspecialchars($_br['farmacia_slogan'] ?? 'Sistema de Gestión');
-$_br_logo     = $_br['farmacia_logo_url'] ? htmlspecialchars($_br['farmacia_logo_url']) : null;
-$_br_primario = htmlspecialchars($_br['farmacia_color_primario']);
-$_br_secundario = htmlspecialchars($_br['farmacia_color_secundario']);
-$_br_hover    = htmlspecialchars($_br['_color_hover']);
-$_br_claro    = htmlspecialchars($_br['_color_claro']);
+// Branding Universal del SaaS para el Login
+$_br_nombre   = 'FarmaCloud';
+$_br_slogan   = 'SaaS Platform';
+$_br_logo     = '../assets/logoRDEV.webp'; 
+$_br_primario = '#059669'; // Verde original
+$_br_secundario = '#10b981'; // Verde claro
+$_br_hover    = '#047857'; // Verde oscuro hover
+$_br_claro    = '#d1fae5'; // Verde muy claro
 
 // Si ya hay sesión de farmacia activa, redirigir al dashboard
 if (isset($_SESSION['usuario_id'])) {
@@ -23,9 +20,9 @@ if (isset($_SESSION['usuario_id'])) {
     exit;
 }
 
-// Si ya hay sesión de super admin activa, redirigir a su panel
+// Si ya hay sesión de super admin activa, redirigir al index universal
 if (!empty($_SESSION['super_admin_id'])) {
-    header('Location: ' . BASE_URL . '/superadmin/index.php');
+    header('Location: ' . BASE_URL . '/index.php');
     exit;
 }
 
@@ -62,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Registrar último login
                     $pdo->prepare("UPDATE super_admins SET ultimo_login = NOW() WHERE id = ?")->execute([$sa['id']]);
 
-                    header('Location: ' . BASE_URL . '/superadmin/index.php');
+                    header('Location: ' . BASE_URL . '/index.php');
                     exit;
                 }
             } else {
@@ -118,8 +115,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="../assets/css/main.css?v=2.1">
     <link rel="stylesheet" href="../assets/css/components.css?v=2.1">
 
-    <!-- CSS vars de branding inyectadas dinámicamente -->
-    <?= branding_css_vars() ?>
+    <!-- CSS vars de branding inyectadas directamente para el SaaS -->
+    <style id="branding-css-vars">
+        :root {
+            --color-primario:        <?= $_br_primario ?>;
+            --color-primario-hover:  <?= $_br_hover ?>;
+            --color-primario-claro:  <?= $_br_claro ?>;
+            --color-primario-oscuro: #064e3b;
+            --color-secundario:      <?= $_br_secundario ?>;
+        }
+    </style>
 
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -171,10 +176,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             z-index: 1;
         }
         .left-brand-icon {
-            width: 48px; height: 48px;
+            width: 120px; height: 120px;
             background: rgba(255,255,255, 0.15);
             border: 1px solid rgba(255,255,255, 0.25);
-            border-radius: 14px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -185,17 +190,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .left-brand-icon img { width: 100%; height: 100%; object-fit: contain; }
         .left-brand-icon svg { width: 24px; height: 24px; }
         .left-brand-name {
-            font-size: 1.2rem;
+            font-size: 2.2rem;
             font-weight: 700;
             color: #ffffff;
             letter-spacing: -0.02em;
+            line-height: 1.1;
         }
         .left-brand-sub {
-            font-size: 0.75rem;
+            font-size: 1.1rem;
             color: rgba(255,255,255,0.7);
             font-weight: 500;
             letter-spacing: 0.05em;
             text-transform: uppercase;
+            margin-top: 4px;
         }
 
         .left-center { z-index: 1; }
@@ -257,7 +264,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-bottom: 40px;
         }
         .login-mobile-icon {
-            width: 44px; height: 44px;
+            width: 56px; height: 56px;
             background: <?= $_br_claro ?>;
             border: 1px solid <?= $_br_primario ?>33;
             border-radius: 12px;
@@ -269,16 +276,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .login-mobile-icon img { width: 100%; height: 100%; object-fit: contain; }
         .login-mobile-icon svg { width: 22px; height: 22px; }
         .login-mobile-name {
-            font-size: 1.1rem;
+            font-size: 1.6rem;
             font-weight: 700;
             color: #0f172a;
+            line-height: 1.1;
         }
         .login-mobile-sub {
-            font-size: 0.72rem;
+            font-size: 0.85rem;
+            font-weight: 600;
             color: #64748b;
-            font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            margin-top: 2px;
         }
 
         .login-heading {

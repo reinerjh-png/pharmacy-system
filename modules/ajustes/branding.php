@@ -385,7 +385,7 @@ include __DIR__ . '/../../views/layout/header.php';
                             <input type="text" id="br-slogan" name="farmacia_slogan" class="form-input"
                                    value="<?= htmlspecialchars($b['farmacia_slogan'] ?? '') ?>"
                                    placeholder="Ej: Sistema de Gestión Profesional" maxlength="255">
-                            <span class="field-hint">Aparece debajo del nombre en el login</span>
+                            <span class="field-hint">Aparece en el sidebar y encabezados del panel</span>
                         </div>
                     </div>
 
@@ -414,13 +414,7 @@ include __DIR__ . '/../../views/layout/header.php';
                                 <p>JPG, PNG o SVG · Máximo 2 MB</p>
                             </div>
                         </div>
-                        <div class="form-field">
-                            <label for="br-logo-url">O pegar URL externa del logo</label>
-                            <input type="url" id="br-logo-url" name="farmacia_logo_url" class="form-input"
-                                   value="<?= htmlspecialchars($b['farmacia_logo_url'] ?? '') ?>"
-                                   placeholder="https://ejemplo.com/logo.png">
-                            <span class="field-hint">Útil si estás en InfinityFree u hosting con restricciones de subida</span>
-                        </div>
+
                     </div>
                 </div>
             </div>

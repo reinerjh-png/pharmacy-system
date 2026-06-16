@@ -94,7 +94,7 @@ function branding_css_vars(): string {
 function _branding_defaults(): array {
     return [
         'id'                       => 1,
-        'farmacia_nombre'          => 'Farmacia San Miguel',
+        'farmacia_nombre'          => 'Mi Farmacia',
         'farmacia_slogan'          => 'Sistema de Gestión',
         'farmacia_color_primario'  => '#059669',
         'farmacia_color_secundario'=> '#10b981',

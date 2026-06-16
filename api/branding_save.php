@@ -57,7 +57,19 @@ if (!preg_match($hex_regex, $color_s)) {
 }
 
 // ── Manejo de subida de logo (archivo) ──
-$logo_final = $logo_url ?: null; // Por defecto usa la URL si existe
+try {
+    $pdo = conectar();
+    $fid = (int)$_SESSION['farmacia_id'];
+    
+    // Obtener el logo actual de la base de datos
+    $stmtC = $pdo->prepare("SELECT farmacia_logo_url FROM branding WHERE farmacia_id = ?");
+    $stmtC->execute([$fid]);
+    $current_logo = $stmtC->fetchColumn();
+} catch (PDOException $e) {
+    json_out(false, 'Error de base de datos al validar el logo actual.');
+}
+
+$logo_final = $current_logo; // Por defecto mantenemos el actual
 
 if (!empty($_FILES['logo_file']['name'])) {
     $file     = $_FILES['logo_file'];
@@ -73,43 +85,56 @@ if (!empty($_FILES['logo_file']['name'])) {
     // Validar tipo MIME real
     $finfo     = new finfo(FILEINFO_MIME_TYPE);
     $mime      = $finfo->file($file['tmp_name']);
-    $tipos_ok  = ['image/jpeg', 'image/png', 'image/svg+xml', 'image/gif', 'image/webp'];
-
-    if (!in_array($mime, $tipos_ok)) {
-        json_out(false, 'Tipo de archivo no permitido. Solo JPG, PNG, SVG, GIF o WebP.');
-    }
-
-    // Extensión segura
-    $ext_map = [
+    $mime_map  = [
         'image/jpeg'   => 'jpg',
         'image/png'    => 'png',
         'image/svg+xml'=> 'svg',
         'image/gif'    => 'gif',
         'image/webp'   => 'webp',
     ];
-    $ext = $ext_map[$mime];
+
+    if (!array_key_exists($mime, $mime_map)) {
+        json_out(false, 'El archivo subido no es una imagen válida (JPG, PNG, GIF, WEBP o SVG).');
+    }
+
+    // Validar extensión
+    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $ext_map = [
+        'jpg'          => 'jpg',
+        'jpeg'         => 'jpg',
+        'png'          => 'png',
+        'svg'          => 'svg',
+        'gif'          => 'gif',
+        'webp'         => 'webp',
+        'image/jpeg'   => 'jpg',
+        'image/png'    => 'png',
+        'image/svg+xml'=> 'svg',
+        'image/gif'    => 'gif',
+        'image/webp'   => 'webp',
+    ];
 
     $upload_dir = __DIR__ . '/../uploads/branding/';
     if (!is_dir($upload_dir)) {
         mkdir($upload_dir, 0755, true);
     }
 
+    $fid_filename = (int)$_SESSION['farmacia_id'];
     // Nombre único para evitar colisiones y ataques path traversal
-    $filename = 'logo_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+    $filename = 'logo_fid' . $fid_filename . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . ($mime_map[$mime]);
     $dest     = $upload_dir . $filename;
 
     if (!move_uploaded_file($file['tmp_name'], $dest)) {
         json_out(false, 'No se pudo guardar el archivo. Verifica los permisos de la carpeta uploads/branding/.');
     }
 
-    $logo_final = '/uploads/branding/' . $filename;
+    $logo_final = BASE_URL . '/uploads/branding/' . $filename;
 }
 
 // ── Guardar en BD ──
 try {
-    $pdo = conectar();
+    // Ya tenemos $pdo definida arriba
 
-        // Verificar si ya existe un registro para esta farmacia
+    // Verificar si ya existe un registro para esta farmacia
     $fid = (int)$_SESSION['farmacia_id'];
     $check = $pdo->prepare("SELECT id FROM branding WHERE farmacia_id = ? AND activo = 1 LIMIT 1");
     $check->execute([$fid]);

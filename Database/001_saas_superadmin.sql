@@ -49,18 +49,21 @@ CREATE TABLE IF NOT EXISTS farmacias (
   FOREIGN KEY (creado_por) REFERENCES super_admins(id) ON DELETE SET NULL
 ) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- Migrar la farmacia existente como Farmacia #1
--- Los datos se toman del branding actual del sistema
-INSERT INTO farmacias (id, nombre, slug, creado_por)
-SELECT 1, b.farmacia_nombre, 'farmacia-san-miguel', 1
-FROM branding b
-WHERE b.activo = 1
-ORDER BY b.id ASC
-LIMIT 1;
-
--- Si no hay branding, insertar con valores por defecto
+-- Crear la farmacia #1 (el tenant inicial del sistema).
+-- Este nombre es el valor por defecto; el administrador lo puede cambiar
+-- desde el panel de Super Admin > Editar Farmacia.
 INSERT IGNORE INTO farmacias (id, nombre, slug, creado_por)
-VALUES (1, 'Farmacia San Miguel', 'farmacia-san-miguel', 1);
+VALUES (1, 'Farmacia Principal', 'farmacia-principal', 1);
+
+-- ====================================================
+-- Insertar el branding inicial para la farmacia #1.
+-- El nombre se toma desde la fila que acabamos de crear en farmacias.
+-- IGNORE evita duplicados si el script se ejecuta más de una vez.
+-- =====================================================
+INSERT IGNORE INTO branding (farmacia_id, farmacia_nombre, farmacia_slogan, farmacia_color_primario, farmacia_color_secundario)
+SELECT 1, f.nombre, 'Sistema de Gestión', '#059669', '#10b981'
+FROM farmacias f
+WHERE f.id = 1;
 
 -- =====================================================
 -- PARTE 3: AGREGAR farmacia_id A TABLAS EXISTENTES
@@ -139,14 +142,13 @@ ALTER TABLE ajustes_stock
 UPDATE ajustes_stock SET farmacia_id = 1;
 
 -- ── TABLA: branding ──────────────────────────────────
+-- farmacia_id ya existe en la tabla (creado en 000_instalacion_completa.sql).
+-- Sólo añadimos la Foreign Key hacia farmacias y actualizamos el registro.
 ALTER TABLE branding
-  ADD COLUMN farmacia_id INT NOT NULL DEFAULT 1
-    AFTER id,
-  ADD INDEX idx_branding_farmacia_id (farmacia_id),
   ADD CONSTRAINT fk_branding_farmacia
     FOREIGN KEY (farmacia_id) REFERENCES farmacias(id) ON DELETE CASCADE;
 
-UPDATE branding SET farmacia_id = 1;
+UPDATE branding SET farmacia_id = 1 WHERE farmacia_id = 1;
 
 -- =====================================================
 -- PARTE 4: LOG DE IMPERSONACIÓN (Super Admin accede

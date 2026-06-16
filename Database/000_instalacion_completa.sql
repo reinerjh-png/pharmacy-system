@@ -1,7 +1,7 @@
 -- =====================================================
 -- INSTALACIÓN COMPLETA — Sistema de Farmacia SaaS
 -- Archivo unificado para phpMyAdmin
--- Fecha: 2026-05-18
+-- Fecha: 2026-06-15
 -- =====================================================
 
 -- -----------------------------------------------------
@@ -285,36 +285,34 @@ ALTER TABLE `usuarios` ADD INDEX `idx_usuarios_email` (`email`);
 OPTIMIZE TABLE `productos`, `inventario`, `ventas`, `detalle_ventas`, `usuarios`;
 
 -- =====================================================
--- MÓDULO DE BRANDING E IDENTIDAD
+-- MÓDULO DE BRANDING E IDENTIDAD (Multi-Tenant)
 -- =====================================================
+-- Tabla de configuración de branding por farmacia.
+-- Cada farmacia (tenant) tiene su propia fila en esta tabla.
+-- La relación con `farmacias` (farmacia_id) se establece
+-- en la migración 001_saas_superadmin.sql. Aquí se crea
+-- la estructura base para que el ALTER TABLE funcione.
 
--- Tabla principal de configuración de branding
--- Diseñada para SaaS multitenancy futuro (campo "activo")
 CREATE TABLE IF NOT EXISTS branding (
-  id                       INT PRIMARY KEY AUTO_INCREMENT,
-  farmacia_nombre          VARCHAR(150) NOT NULL DEFAULT 'Mi Farmacia',
-  farmacia_slogan          VARCHAR(255)          DEFAULT 'Sistema de Gestión Profesional',
-  farmacia_color_primario  VARCHAR(7)   NOT NULL DEFAULT '#059669',
-  farmacia_color_secundario VARCHAR(7)  NOT NULL DEFAULT '#10b981',
-  farmacia_logo_url        VARCHAR(500)          DEFAULT NULL,
-  farmacia_direccion       VARCHAR(300)          DEFAULT NULL,
-  farmacia_telefono        VARCHAR(30)           DEFAULT NULL,
-  farmacia_ruc             VARCHAR(20)           DEFAULT NULL,
-  activo                   TINYINT(1)            DEFAULT 1,
-  actualizado_en           DATETIME              DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  actualizado_por          INT                   DEFAULT NULL,
+  id                        INT          PRIMARY KEY AUTO_INCREMENT,
+  farmacia_id               INT          NOT NULL DEFAULT 1,
+  farmacia_nombre           VARCHAR(150) NOT NULL DEFAULT 'Mi Farmacia',
+  farmacia_slogan           VARCHAR(255)          DEFAULT 'Sistema de Gestión',
+  farmacia_color_primario   VARCHAR(7)   NOT NULL DEFAULT '#059669',
+  farmacia_color_secundario VARCHAR(7)   NOT NULL DEFAULT '#10b981',
+  farmacia_logo_url         VARCHAR(500)          DEFAULT NULL,
+  farmacia_direccion        VARCHAR(300)          DEFAULT NULL,
+  farmacia_telefono         VARCHAR(30)           DEFAULT NULL,
+  farmacia_ruc              VARCHAR(20)           DEFAULT NULL,
+  activo                    TINYINT(1)            DEFAULT 1,
+  actualizado_en            DATETIME              DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  actualizado_por           INT                   DEFAULT NULL,
+  INDEX idx_branding_farmacia_id (farmacia_id),
   FOREIGN KEY (actualizado_por) REFERENCES usuarios(id) ON DELETE SET NULL
+  -- NOTA: La FK a farmacias(id) se añade en 001_saas_superadmin.sql
+  -- para mantener el orden de creación de tablas.
 ) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- Configuración inicial con los valores actuales del sistema
-INSERT INTO branding (
-  farmacia_nombre,
-  farmacia_slogan,
-  farmacia_color_primario,
-  farmacia_color_secundario
-) VALUES (
-  'Farmacia San Miguel',
-  'Sistema de Gestión',
-  '#059669',
-  '#10b981'
-);
+-- NOTA: El INSERT inicial del branding se realiza en
+-- 001_saas_superadmin.sql, una vez que la farmacia #1
+-- ha sido creada y se conoce su nombre real.
