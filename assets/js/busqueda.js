@@ -15,11 +15,32 @@ function buscarProducto() {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
         fetch(`${window.BASE_URL || ''}/api/buscar_producto.php?q=${encodeURIComponent(q)}`)
-            .then(res => res.json())
+            .then(async res => {
+                const text = await res.text();
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.error("Respuesta no es JSON válido:", text);
+                    alert("Error en el servidor. Revisa la consola (F12) para más detalles.");
+                    throw new Error("Respuesta inválida del servidor");
+                }
+            })
             .then(data => {
+                if (data.error) {
+                    alert("Error del servidor: " + data.error);
+                    return;
+                }
+
                 resultadosDiv.innerHTML = '';
                 if (data.length === 0) {
                     resultadosDiv.innerHTML = '<div style="padding: 12px; color: var(--color-texto-secundario);">No hay resultados o sin stock</div>';
+                    resultadosDiv.style.display = 'block';
+                } else if (data.length === 1 && (data[0].codigo_barras === q || q.length >= 8)) {
+                    // Si es un escáner de código de barras (1 solo resultado exacto), agregar directamente
+                    agregarAlCarrito(data[0]);
+                    input.value = '';
+                    resultadosDiv.innerHTML = '';
+                    resultadosDiv.style.display = 'none';
                 } else {
                     data.forEach(item => {
                         const div = document.createElement('div');
@@ -52,8 +73,8 @@ function buscarProducto() {
 
                         resultadosDiv.appendChild(div);
                     });
+                    resultadosDiv.style.display = 'block';
                 }
-                resultadosDiv.style.display = 'block';
             })
             .catch(err => console.error("Error en búsqueda AJAX:", err));
     }, 300);
@@ -64,5 +85,16 @@ document.addEventListener('click', function(e) {
     if (buscador && !buscador.contains(e.target)) {
         const res = document.getElementById('resultadosBusqueda');
         if (res) res.style.display = 'none';
+    }
+});
+
+document.getElementById('inputBusqueda').addEventListener('keydown', function(e) {
+    // Evitar que el Enter de un lector de códigos de barras envíe algún formulario por accidente
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        // Si hay resultados y presionan enter, forzar búsqueda o seleccionar el primero si hay uno
+        if (this.value.trim().length >= 2) {
+            buscarProducto();
+        }
     }
 });
